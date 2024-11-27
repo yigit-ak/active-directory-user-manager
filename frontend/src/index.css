@@ -1,14 +1,16 @@
 :root {
-  --background-image: url(./public/background.png);
+  --background-image: url(@/assets/background.png);
 }
 
 body {
-  background-image: var(--background-image); /* Replace with your image path */
-  background-size: cover; /* Makes the image cover the entire container */
-  background-position: center; /* Centers the image */
-  background-repeat: no-repeat; /* Prevents the image from repeating */
-  height: 100vh; /* Full viewport height */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-image: var(--background-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+
+  font-family: Arial, Geneva, Tahoma, sans-serif;
+  font-size: 24px;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }

@@ -2,14 +2,16 @@ import './App.css'
 import { Routes, Route } from "react-router-dom"
 
 import CreateUser from './pages/CreateUser.jsx'
-import Home from './pages/Home.jsx'
+import Home from './pages/Home'
 import NotFound from './pages/NotFound.jsx'
 import UserDetails from './pages/UserDetails.jsx'
 import UserLookup from './pages/UserLookup.jsx'
+import Header from './components/layout/Header.jsx'
 
 function App() {
   return (
     <>
+      <Header />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/create-user" element={<CreateUser />} />

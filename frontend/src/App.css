@@ -1,0 +1,31 @@
+header {
+  display: flex;
+  justify-content: right;
+}
+
+.header-logo {
+  height: 50px;
+  margin: 10px;
+}
+
+.option-button {
+  height: 100px;
+  width: 600px;
+
+  margin: 20px;
+
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+
+  display: grid;
+  place-items: center;
+}
+
+.option-button:hover {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+}
