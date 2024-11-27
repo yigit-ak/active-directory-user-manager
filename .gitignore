@@ -24,5 +24,4 @@ dist-ssr
 *.sw?
 
 # Client specific directories and files
-company-logo.png
-background.png
+frontend/public
