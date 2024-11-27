@@ -1,7 +1,7 @@
 function UserDetails() {
   return (
     <>
-      a
+      
     </>
   )
 }
