@@ -1,11 +1,11 @@
 import './App.css'
 import { Routes, Route } from "react-router-dom"
 
-import { CreateUser } from './pages/CreateUser'
-import { Home } from './pages/Home'
-import { NotFound } from './pages/NotFound'
-import { UserDetails } from './pages/UserDetails'
-import { UserLookup } from './pages/UserLookup'
+import CreateUser from './pages/CreateUser.jsx'
+import Home from './pages/Home.jsx'
+import NotFound from './pages/NotFound.jsx'
+import UserDetails from './pages/UserDetails.jsx'
+import UserLookup from './pages/UserLookup.jsx'
 
 function App() {
   return (
