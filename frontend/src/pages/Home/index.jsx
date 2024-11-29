@@ -2,9 +2,9 @@ import OptionButton from "./OptionButton"
 
 function Home() {
   return (
-    <div className="home">
-      <OptionButton link='/UserLookup' title={'User Lookup'} />
-      <OptionButton link='/CreateUser' title={'Create New User for Vendor'} />
+    <div className="homepage">
+      <OptionButton link='/user-lookup' title={'User Lookup'} />
+      <OptionButton link='/create-user' title={'Create New User for Vendor'} />
     </div>
   )
 }

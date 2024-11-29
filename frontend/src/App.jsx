@@ -5,7 +5,7 @@ import CreateUser from './pages/CreateUser.jsx'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound.jsx'
 import UserDetails from './pages/UserDetails.jsx'
-import UserLookup from './pages/UserLookup.jsx'
+import UserLookup from './pages/UserLookup'
 import Header from './components/layout/Header.jsx'
 
 function App() {

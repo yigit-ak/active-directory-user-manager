@@ -14,3 +14,30 @@ body {
   color: white;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
+
+button {
+  background-color: #C50852;
+
+  font: inherit;
+  color: white;
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  border: 0;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+label {
+  background-color: transparent
+}
+
+input {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  border: 0;
+
+  font: inherit;
+}
