@@ -75,3 +75,58 @@ header {
 .user-lookup-page > form > label {
   font-size: 125%;
 }
+
+.create-user-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  margin-top: 10vh;
+}
+
+.create-user-page > form {
+  width: 600px;
+
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 20px 40px;
+}
+
+.create-user-page > form > button {
+  height: 40px;
+  width: 150px;
+  margin: 10px;
+  align-self: center;
+}
+
+.create-user-form-grid {
+  margin: 20px 0px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.create-user-form-partition {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-content: center;
+  justify-content: center
+}
+
+.create-user-form-partition > label {
+  font-size: 75%;
+}
+
+.create-user-form > .form-title {
+  margin: 20px;
+  align-self: center;
+}

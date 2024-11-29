@@ -22,7 +22,7 @@ button {
   color: white;
 
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  border-radius: 20px;
+  border-radius: 10px;
   border: 0;
 }
 
@@ -34,10 +34,24 @@ label {
   background-color: transparent
 }
 
-input {
+input, select {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  border-radius: 20px;
+  border-radius: 10px;
   border: 0;
 
   font: inherit;
+  font-size: 75%;
+
+  margin: 5px 0;
+  padding-left: 10px;
+
+  min-height: 30px;
+}
+
+small {
+  font-size: 60%;
+}
+
+select option:first-child {
+  color: gray;
 }

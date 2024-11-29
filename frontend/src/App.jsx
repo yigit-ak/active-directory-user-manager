@@ -1,7 +1,7 @@
 import './App.css'
 import { Routes, Route } from "react-router-dom"
 
-import CreateUser from './pages/CreateUser.jsx'
+import CreateUser from './pages/CreateUser'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound.jsx'
 import UserDetails from './pages/UserDetails.jsx'
