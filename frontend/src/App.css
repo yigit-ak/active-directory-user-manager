@@ -72,8 +72,63 @@ header {
   text-align: center;
 }
 
-.user-lookup-page > form > label {
-  font-size: 125%;
+.user-details-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  margin-top: 10vh;
+}
+
+.user-info-card {
+  min-width: 600px;
+
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 20px 40px;
+}
+
+.info-card-title {
+  font-weight: bold;
+  margin: 50px 0;
+}
+
+.info-card-attribute {
+  font-weight: bold;
+}
+
+.user-info {
+  margin-bottom: 20px;
+}
+
+.info-card-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info-card-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-info-card-buttons > button {
+  min-height: 40px;
+  min-width: 200px;
+  margin: 10px;
+  padding: 10px;
 }
 
 .create-user-page {
@@ -129,4 +184,16 @@ header {
 .create-user-form > .form-title {
   margin: 20px;
   align-self: center;
+}
+
+.go-back {
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 20px;
+  font-size: 80%;
+  font-weight: bold;
+}
+
+.go-back:hover {
+  color: white;
+  cursor: pointer;
 }

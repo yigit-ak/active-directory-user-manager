@@ -10,7 +10,7 @@ body {
   height: 100vh;
 
   font-family: Arial, Geneva, Tahoma, sans-serif;
-  font-size: 24px;
+  font-size: 20px;
   color: white;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
@@ -31,7 +31,8 @@ button:hover {
 }
 
 label {
-  background-color: transparent
+  background-color: transparent;
+  font-weight: bold;
 }
 
 input, select {
