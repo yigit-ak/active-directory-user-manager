@@ -45,6 +45,7 @@ input, select {
 
   margin: 5px 0;
   padding-left: 10px;
+  box-sizing: border-box; /* padding won't increase size */
 
   min-height: 30px;
 }
