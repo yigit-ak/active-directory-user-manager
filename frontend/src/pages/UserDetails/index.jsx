@@ -8,6 +8,7 @@ function UserDetails() {
     group: 'Interns',
     email: 'yigit-ak@yigitak.com',
     phone: '+1 (123) 456-7890',
+    locked: true,
   };
 
   return (
@@ -15,10 +16,12 @@ function UserDetails() {
       <div className="user-info-card">
         <GoBack link={'/user-lookup'} />
 
-        <h1 className="info-card-title">{client.id}</h1>
+        <div className="info-card-layout-top">
+          <h1 className="info-card-title">{client.id}</h1>
+          {client.locked && <div className="user-locked-warning">User is locked.</div>}
+        </div>
 
-        <div className="info-card-layout">
-
+        <div className="info-card-layout-bottom">
           <div className="info-card-body">
             <div className="user-info">
               <span className="info-card-attribute">Name: </span> {client.name}
@@ -38,7 +41,7 @@ function UserDetails() {
           </div>
         
           <div className="user-info-card-buttons">
-            <button>Lock User</button>
+            {client.locked ? <button>Unlock User</button> : <button>Lock User</button>}
             <button>Reset Password</button>
           </div>
 
