@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GoBack from "@/components/GoBack";
 
 function UserLookup() {
   const [userId, setUserId] = useState('');
@@ -23,6 +24,7 @@ function UserLookup() {
   return (
     <div className="user-lookup-page">
       <form id="user-id-form" onSubmit={handleSubmit}>
+        <GoBack link='/' />
         <label htmlFor="user-id">User Lookup</label>
         <input type="text" id="user-id" name="user-id"
           onChange={handleInputChange}

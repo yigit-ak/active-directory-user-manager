@@ -68,7 +68,9 @@ header {
   margin: 10px;
   height: 50px;
   width: 100%;
-  align-content: center;
+}
+
+.user-lookup-page > form > label {
   text-align: center;
 }
 

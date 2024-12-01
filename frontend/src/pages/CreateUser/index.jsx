@@ -1,3 +1,5 @@
+import GoBack from "@/components/GoBack";
+
 function CreateUser() {
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -7,6 +9,9 @@ function CreateUser() {
   return (
     <div className="create-user-page">
       <form className="create-user-form"  onSubmit={handleSubmit}>
+      
+      <GoBack link='/'/>
+      
         <div className="form-title">Create New User</div>
 
         <div className="create-user-form-grid">
