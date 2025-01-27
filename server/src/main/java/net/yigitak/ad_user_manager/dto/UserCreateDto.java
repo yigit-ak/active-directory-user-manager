@@ -1,6 +1,6 @@
 package net.yigitak.ad_user_manager.dto;
 
-public record UserDto(
+public record UserCreateDto(
         String firstName,
         String lastName,
         String email,
@@ -9,12 +9,7 @@ public record UserDto(
 ) {
     @Override
     public String toString() {
-        return "UserDto{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", vendor='" + vendor + '\'' +
-                '}';
+        return "UserDto{firstName='%s', lastName='%s', email='%s', phoneNumber='%s', vendor='%s'}"
+                .formatted(firstName, lastName, email, phoneNumber, vendor);
     }
 }
