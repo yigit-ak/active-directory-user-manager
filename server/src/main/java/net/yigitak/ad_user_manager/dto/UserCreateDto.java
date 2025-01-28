@@ -5,7 +5,8 @@ public record UserCreateDto(
         String lastName,
         String email,
         String phoneNumber,
-        String vendor
+        String vendor,
+        String password
 ) {
     @Override
     public String toString() {
