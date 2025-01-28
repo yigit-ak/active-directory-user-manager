@@ -1,7 +1,6 @@
 package net.yigitak.ad_user_manager.util;
 
 public class UserAccountControlUtil {
-
     // userAccountControl flags
     private static final int NORMAL_ACCOUNT = 0x200; // 512
     private static final int DONT_EXPIRE_PASSWD = 0x10000; // 65536
@@ -51,6 +50,10 @@ public class UserAccountControlUtil {
      */
     public static boolean isAccountEnabled(int userAccountControl) {
         return (userAccountControl & ACCOUNTDISABLE) == 0;
+    }
+
+    public static boolean isAccountEnabled(String userAccountControl) {
+        return isAccountEnabled(Integer.parseInt(userAccountControl));
     }
 
 }

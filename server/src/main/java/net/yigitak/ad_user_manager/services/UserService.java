@@ -16,7 +16,10 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
+import static net.yigitak.ad_user_manager.util.DnExtractor.extractFirstOu;
+import static net.yigitak.ad_user_manager.util.PasswordEncoder.encodePassword;
 import static net.yigitak.ad_user_manager.util.SecurePasswordGenerator.generatePassword;
+import static net.yigitak.ad_user_manager.util.UserAccountControlUtil.isAccountEnabled;
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 @Service
@@ -41,15 +44,15 @@ public class UserService {
 
         // Use an AttributesMapper to map LDAP attributes to UserDto
         return ldapTemplate.search(query, (AttributesMapper<UserResponseDto>) attributes -> new UserResponseDto(
-                (String) attributes.get("cn").get(),
-                (String) attributes.get("givenName").get(),
-                (String) attributes.get("sn").get(),
-                (String) attributes.get("displayName").get(),
-                (String) attributes.get("mail").get(),
-                (String) attributes.get("telephoneNumber").get(),
-                (String) attributes.get("sAMAccountName").get(),
-                (String) attributes.get("userPrincipalName").get()
-                // TODO: add vendor
+                extractFirstOu(attributes.get("distinguishedName").get().toString()),
+                attributes.get("cn").get().toString(),
+                attributes.get("sAMAccountName").get().toString(),
+                attributes.get("displayName").get().toString(),
+                attributes.get("givenName").get().toString(),
+                attributes.get("sn").get().toString(),
+                attributes.get("mail").get().toString(),
+                attributes.get("telephoneNumber").get().toString(),
+                isAccountEnabled(attributes.get("userAccountControl").get().toString())
         )).stream().findFirst().orElse(null); // Assuming only one user should match, return null if none found
     }
 
@@ -75,6 +78,9 @@ public class UserService {
                 "user"
         });
 
+        String pw = generatePassword();
+        System.out.println("Password: " + pw);
+
         context.setAttributeValue("cn", "s@%s.%s".formatted(user.firstName(), user.lastName()));
         context.setAttributeValue("description", DESCRIPTION);
         context.setAttributeValue("sAMAccountName", "%s.%s".formatted(user.firstName(), user.lastName())); // TODO: change
@@ -83,8 +89,8 @@ public class UserService {
         context.setAttributeValue("mail", user.email());
         context.setAttributeValue("sn", user.lastName());
         context.setAttributeValue("telephoneNumber", user.phoneNumber());
-//        context.setAttributeValue("unicodePwd", encodePassword(generatePassword())); // TODO: change
-        context.setAttributeValue("userPassword", generatePassword()); // TODO: change
+        context.setAttributeValue("unicodePwd", encodePassword(pw)); // TODO: change
+//        context.setAttributeValue("userPassword", pw); // TODO: change
         context.setAttributeValue("userPrincipalName", "%s.%s@yigit.local".formatted(user.firstName(), user.lastName())); // TODO: change
 
         ldapTemplate.bind(context);
@@ -93,7 +99,6 @@ public class UserService {
 
         // todo : send mail
     }
-
 
     public void resetPassword(String commonName) {
         // TODO: implementation
@@ -109,11 +114,14 @@ public class UserService {
         };
 
         ldapTemplate.modifyAttributes(dn, mods);
-        System.out.println("Password reset successfully for " + commonName);
+        // todo : mail
     }
 
-
     public void lockUser(String commonName) {
+        // TODO: implementation
+    }
+
+    public void unlockUser(String commonName) {
         // TODO: implementation
     }
 
@@ -126,6 +134,4 @@ public class UserService {
 
         System.out.printf("\u001B[32mUSER UNLOCKED: %s\u001B[0m%n", dn);
     }
-
-
 }
