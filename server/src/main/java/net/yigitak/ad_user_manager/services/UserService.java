@@ -16,6 +16,7 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
+import static net.yigitak.ad_user_manager.util.SecurePasswordGenerator.generatePassword;
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 @Service
@@ -33,34 +34,29 @@ public class UserService {
     @Autowired
     private LdapTemplate ldapTemplate;
 
-    @Autowired
-    private PasswordEncoderService encoderService;
-
     public UserResponseDto findUserByCn(String cn) {
         LdapQuery query = query()
                 .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
                 .where("cn").is(cn); // Search for the user by 'cn'
 
         // Use an AttributesMapper to map LDAP attributes to UserDto
-        return ldapTemplate.search(query, (AttributesMapper<UserResponseDto>) attributes -> {
-            return new UserResponseDto(
-                    (String) attributes.get("cn").get(),
-                    (String) attributes.get("givenName").get(),
-                    (String) attributes.get("sn").get(),
-                    (String) attributes.get("displayName").get(),
-                    (String) attributes.get("mail").get(),
-                    (String) attributes.get("telephoneNumber").get(),
-                    (String) attributes.get("sAMAccountName").get(),
-                    (String) attributes.get("userPrincipalName").get()
-                    // TODO: add vendor
-                    );
-        }).stream().findFirst().orElse(null); // Assuming only one user should match, return null if none found
+        return ldapTemplate.search(query, (AttributesMapper<UserResponseDto>) attributes -> new UserResponseDto(
+                (String) attributes.get("cn").get(),
+                (String) attributes.get("givenName").get(),
+                (String) attributes.get("sn").get(),
+                (String) attributes.get("displayName").get(),
+                (String) attributes.get("mail").get(),
+                (String) attributes.get("telephoneNumber").get(),
+                (String) attributes.get("sAMAccountName").get(),
+                (String) attributes.get("userPrincipalName").get()
+                // TODO: add vendor
+        )).stream().findFirst().orElse(null); // Assuming only one user should match, return null if none found
     }
 
     public void createNewUser(UserCreateDto user) {
         System.out.println("\u001B[34m" +
                 "CREATING NEW USER" +
-                "\u001B[0m");
+                "\u001B[0m"); // todo: delete later
         String fullName = "%s %s".formatted(user.firstName(), user.lastName());
 
         Name dn = LdapNameBuilder.newInstance()
@@ -87,25 +83,41 @@ public class UserService {
         context.setAttributeValue("mail", user.email());
         context.setAttributeValue("sn", user.lastName());
         context.setAttributeValue("telephoneNumber", user.phoneNumber());
-        context.setAttributeValue("unicodePwd", encoderService.encodePassword(user.password())); // TODO: change
+//        context.setAttributeValue("unicodePwd", encodePassword(generatePassword())); // TODO: change
+        context.setAttributeValue("userPassword", generatePassword()); // TODO: change
         context.setAttributeValue("userPrincipalName", "%s.%s@yigit.local".formatted(user.firstName(), user.lastName())); // TODO: change
 
         ldapTemplate.bind(context);
 
         unlockUser(dn);
+
+        // todo : send mail
     }
 
 
-    public void resetPassword() {
+    public void resetPassword(String commonName) {
+        // TODO: implementation
+        Name dn = LdapNameBuilder.newInstance()
+                .add("OU", PARENT_ORGANIZATIONAL_UNIT)
+                .add("CN", commonName)
+                .build();
+
+        String newPassword = generatePassword();
+
+        ModificationItem[] mods = new ModificationItem[]{
+                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", newPassword))
+        };
+
+        ldapTemplate.modifyAttributes(dn, mods);
+        System.out.println("Password reset successfully for " + commonName);
+    }
+
+
+    public void lockUser(String commonName) {
         // TODO: implementation
     }
 
-
-    public void lockUser() {
-        // TODO: implementation
-    }
-
-    public void unlockUser(Name dn) {
+    private void unlockUser(Name dn) {
         System.out.printf("\u001B[34mUNLOCKING USER: %s\u001B[0m%n", dn);
 
         ldapTemplate.modifyAttributes(dn, new ModificationItem[]{
@@ -114,4 +126,6 @@ public class UserService {
 
         System.out.printf("\u001B[32mUSER UNLOCKED: %s\u001B[0m%n", dn);
     }
+
+
 }
