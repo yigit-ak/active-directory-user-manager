@@ -19,7 +19,7 @@ import javax.naming.directory.ModificationItem;
 import static net.yigitak.ad_user_manager.util.DnExtractor.extractFirstOu;
 import static net.yigitak.ad_user_manager.util.PasswordEncoder.encodePassword;
 import static net.yigitak.ad_user_manager.util.SecurePasswordGenerator.generatePassword;
-import static net.yigitak.ad_user_manager.util.UserAccountControlUtil.isAccountEnabled;
+import static net.yigitak.ad_user_manager.util.UserAccountControlUtil.*;
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 @Service
@@ -37,10 +37,10 @@ public class UserService {
     @Autowired
     private LdapTemplate ldapTemplate;
 
-    public UserResponseDto findUserByCn(String cn) {
+    public UserResponseDto findUserByCn(String commonName) {
         LdapQuery query = query()
                 .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
-                .where("cn").is(cn); // Search for the user by 'cn'
+                .where("cn").is(commonName); // Search for the user by 'cn'
 
         // Use an AttributesMapper to map LDAP attributes to UserDto
         return ldapTemplate.search(query, (AttributesMapper<UserResponseDto>) attributes -> new UserResponseDto(
@@ -61,11 +61,12 @@ public class UserService {
                 "CREATING NEW USER" +
                 "\u001B[0m"); // todo: delete later
         String fullName = "%s %s".formatted(user.firstName(), user.lastName());
+        String commonName = "s@%s.%s".formatted(user.firstName(), user.lastName());
 
         Name dn = LdapNameBuilder.newInstance()
                 .add("OU", PARENT_ORGANIZATIONAL_UNIT)
                 .add("OU", user.vendor())
-                .add("CN", "s@%s.%s".formatted(user.firstName(), user.lastName())) // Common Name
+                .add("CN", commonName) // Common Name
                 .build();
 
         DirContextAdapter context = new DirContextAdapter(dn); // new LDAP context for the user entry
@@ -79,9 +80,9 @@ public class UserService {
         });
 
         String pw = generatePassword();
-        System.out.println("Password: " + pw);
+        System.out.println("Password: " + pw); // todo remove this
 
-        context.setAttributeValue("cn", "s@%s.%s".formatted(user.firstName(), user.lastName()));
+        context.setAttributeValue("cn", commonName);
         context.setAttributeValue("description", DESCRIPTION);
         context.setAttributeValue("sAMAccountName", "%s.%s".formatted(user.firstName(), user.lastName())); // TODO: change
         context.setAttributeValue("displayName", fullName);
@@ -89,13 +90,12 @@ public class UserService {
         context.setAttributeValue("mail", user.email());
         context.setAttributeValue("sn", user.lastName());
         context.setAttributeValue("telephoneNumber", user.phoneNumber());
-        context.setAttributeValue("unicodePwd", encodePassword(pw)); // TODO: change
-//        context.setAttributeValue("userPassword", pw); // TODO: change
+        context.setAttributeValue("unicodePwd", encodePassword(pw));
         context.setAttributeValue("userPrincipalName", "%s.%s@yigit.local".formatted(user.firstName(), user.lastName())); // TODO: change
 
         ldapTemplate.bind(context);
 
-        unlockUser(dn);
+        unlockUser(commonName);
 
         // todo : send mail
     }
@@ -118,20 +118,50 @@ public class UserService {
     }
 
     public void lockUser(String commonName) {
-        // TODO: implementation
+        LdapQuery query = query()
+                .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
+                .where("cn").is(commonName); // Search for the user by 'cn'
+
+        String distinguishedName = ldapTemplate.search(query, (
+                        AttributesMapper<String>) attributes ->
+                        attributes.get("distinguishedName").get().toString()
+                )
+                .stream().findFirst().orElse(null);
+
+        String userAccountControl = ldapTemplate.search(query, (
+                        AttributesMapper<String>) attributes ->
+                        attributes.get("userAccountControl").get().toString()
+                )
+                .stream().findFirst().orElse(null);
+
+        String newUserAccountControl = String.valueOf(disableAccount(userAccountControl));
+
+        ldapTemplate.modifyAttributes(distinguishedName, new ModificationItem[]{
+                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userAccountControl", newUserAccountControl))
+        });
     }
 
     public void unlockUser(String commonName) {
-        // TODO: implementation
-    }
+        LdapQuery query = query()
+                .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
+                .where("cn").is(commonName); // Search for the user by 'cn'
 
-    private void unlockUser(Name dn) {
-        System.out.printf("\u001B[34mUNLOCKING USER: %s\u001B[0m%n", dn);
+        String distinguishedName = ldapTemplate.search(query, (
+                        AttributesMapper<String>) attributes ->
+                        attributes.get("distinguishedName").get().toString()
+                )
+                .stream().findFirst().orElse(null);
 
-        ldapTemplate.modifyAttributes(dn, new ModificationItem[]{
-                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userAccountControl", "512")) // TODO: needs edit
+        String userAccountControl = ldapTemplate.search(query, (
+                        AttributesMapper<String>) attributes ->
+                        attributes.get("userAccountControl").get().toString()
+                )
+                .stream().findFirst().orElse(null);
+
+        String newUserAccountControl = String.valueOf(enableUser(userAccountControl));
+
+        ldapTemplate.modifyAttributes(distinguishedName, new ModificationItem[]{
+                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userAccountControl", newUserAccountControl))
         });
-
-        System.out.printf("\u001B[32mUSER UNLOCKED: %s\u001B[0m%n", dn);
     }
 }

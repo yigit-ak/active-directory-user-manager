@@ -33,6 +33,10 @@ public class UserAccountControlUtil {
         return userAccountControl | ACCOUNTDISABLE;
     }
 
+    public static int disableAccount(String userAccountControl) {
+        return disableAccount(Integer.parseInt(userAccountControl));
+    }
+
     /**
      * Enable a previously disabled user while keeping other flags intact
      * @param userAccountControl The current userAccountControl value
@@ -40,6 +44,10 @@ public class UserAccountControlUtil {
      */
     public static int enableUser(int userAccountControl) {
         return userAccountControl & ~ACCOUNTDISABLE; // Removes the disabled flag
+    }
+
+    public static int enableUser(String userAccountControl) {
+        return enableUser(Integer.parseInt(userAccountControl));
     }
 
     /**
