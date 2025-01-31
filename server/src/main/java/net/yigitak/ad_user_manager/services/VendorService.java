@@ -1,5 +1,6 @@
 package net.yigitak.ad_user_manager.services;
 
+import net.yigitak.ad_user_manager.dto.VendorDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.AttributesMapper;
@@ -20,7 +21,7 @@ public class VendorService {
     @Autowired
     private LdapTemplate ldapTemplate;
 
-    public List<String> getAll() {
+    public List<VendorDto> getAll() {
         // Build the base DN
         Name baseDn = LdapNameBuilder.newInstance().add("OU", PARENT_OU).build();
 
@@ -36,7 +37,9 @@ public class VendorService {
                 baseDn,
                 filter,
                 searchControls,
-                (AttributesMapper<String>) attrs -> attrs.get("name").get().toString()
+                (AttributesMapper<VendorDto>) attributes -> new VendorDto(
+                        attributes.get("name").get().toString()
+                )
         );
     }
 
