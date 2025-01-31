@@ -56,7 +56,7 @@ public class UserService {
         )).stream().findFirst().orElse(null); // Assuming only one user should match, return null if none found
     }
 
-    public void createNewUser(UserCreateDto user) {
+    public String createUser(UserCreateDto user) {
         System.out.println("\u001B[34m" +
                 "CREATING NEW USER" +
                 "\u001B[0m"); // todo: delete later
@@ -98,6 +98,8 @@ public class UserService {
         unlockUser(commonName);
 
         // todo : send mail
+
+        return commonName;
     }
 
     public void resetPassword(String commonName) {
