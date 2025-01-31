@@ -26,3 +26,6 @@ dist-ssr
 # Client specific directories and files
 frontend/public
 frontend/src/assets
+
+# Secret Files
+application.properties
