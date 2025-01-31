@@ -1,11 +1,68 @@
+import { useEffect, useState } from "react";
 import GoBack from "@/components/GoBack";
+import { fetchAllVendors, createUser } from "@/api";
 
 function CreateUser() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // TODO: send form to the server
+  const [vendors, setVendors] = useState([]);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    vendor: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Fetch vendors on component mount
+  useEffect(() => {
+    const loadVendors = async () => {
+      try {
+        const vendorList = await fetchAllVendors();
+        setVendors(vendorList);
+      } catch (err) {
+        setError("Failed to load vendors.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadVendors();
+  }, []);
+
+  // Handle form changes
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
-  
+
+  // Handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    try {
+      await createUser({
+        vendor: formData.vendor,
+        commonName: `${formData.firstName} ${formData.lastName}`,
+        samAccountName: formData.email.split("@")[0], // Assuming samAccountName is the email prefix
+        displayName: `${formData.firstName} ${formData.lastName}`,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        isEnabled: true, // Assuming new users are enabled by default
+      });
+      alert("User created successfully!");
+    } catch (err) {
+      setError("Failed to create user.");
+      console.error(err);
+    }
+  };
+
   return (
     <div className="create-user-page">
       <form className="create-user-form"  onSubmit={handleSubmit}>
@@ -17,34 +74,81 @@ function CreateUser() {
         <div className="create-user-form-grid">
           <div className="create-user-form-partition">
             <label htmlFor="name">Name:</label>
-            <input type="text" id="name" name="name" placeholder="Write here" required />
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              placeholder="Write here"
+              required
+            />
           </div>
 
           <div className="create-user-form-partition">
-            <label htmlFor="surname">Surname:</label>
-            <input type="text" id="surname" name="surname" placeholder="Write here" required />
+            <label htmlFor="lastName">Surname:</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              placeholder="Write here"
+              required
+            />
           </div>
 
           <div className="create-user-form-partition">
             <label htmlFor="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="Write here" required />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Write here"
+              required
+            />         
           </div>
 
           <div className="create-user-form-partition">
-            <label htmlFor="phone">Phone Number:</label>
-            <input type="text" id="phone" name="phone" placeholder="Write here" required />
+            <label htmlFor="phoneNumber">Phone Number:</label>
+            <input
+              type="text"
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              placeholder="Write here"
+              required
+            />
           </div>
 
           <div className="create-user-form-partition">
             <label htmlFor="vendor">Vendor*:</label>
-            <select id="vendor" name="vendor" required>
-              <option value="" >Select vendor</option>
-              <option value="companyId1">Company 1</option> {/*TODO: delete this line*/}
-              {/* TODO: fetch vendors from DB */}
+            <select
+              id="vendor"
+              name="vendor"
+              value={formData.vendor}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select vendor</option>
+              {loading ? (
+                <option disabled>Loading vendors...</option>
+              ) : (
+                vendors.map((vendor) => (
+                  <option key={vendor.name} value={vendor.name}>
+                    {vendor.name}
+                  </option>
+                ))
+              )}
             </select>
             <small>*If the vendor is not in the list, open a new request.</small>
           </div>
         </div>
+
+        {error && <p className="error">{error}</p>}
 
         <button type="submit">Create</button>
       </form>
