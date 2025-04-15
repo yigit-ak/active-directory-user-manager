@@ -37,6 +37,9 @@ public class UserService {
     @Autowired
     private LdapTemplate ldapTemplate;
 
+    @Autowired
+    private EmailService emailService;
+
     public UserResponseDto findUserByCn(String commonName) {
         LdapQuery query = query()
                 .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
@@ -80,7 +83,6 @@ public class UserService {
         });
 
         String pw = generatePassword();
-        System.out.println("Password: " + pw); // todo remove this
 
         context.setAttributeValue("cn", commonName);
         context.setAttributeValue("description", DESCRIPTION);
@@ -97,7 +99,7 @@ public class UserService {
 
         unlockUser(commonName);
 
-        // todo : send mail
+        emailService.sendPassword(user.email(), pw);
     }
 
     public void resetPassword(String commonName) {
@@ -107,6 +109,8 @@ public class UserService {
                 .add("CN", commonName)
                 .build();
 
+        UserResponseDto user = findUserByCn(commonName);
+
         String newPassword = generatePassword();
 
         ModificationItem[] mods = new ModificationItem[]{
@@ -114,7 +118,8 @@ public class UserService {
         };
 
         ldapTemplate.modifyAttributes(dn, mods);
-        // todo : mail
+
+        emailService.sendPassword(user.email(), newPassword);
     }
 
     public void lockUser(String commonName) {
