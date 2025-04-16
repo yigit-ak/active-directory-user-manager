@@ -60,10 +60,7 @@ public class UserService {
     }
 
     public void createNewUser(UserCreateDto user) {
-        System.out.println("\u001B[34m" +
-                "CREATING NEW USER" +
-                "\u001B[0m"); // todo: delete later
-        String fullName = "%s %s".formatted(user.firstName(), user.lastName());
+        String fullName = "%s %s".formatted(user.firstName(), user.lastName()); // what if 2 names or 2 surnames
         String commonName = "s@%s.%s".formatted(user.firstName(), user.lastName());
 
         Name dn = LdapNameBuilder.newInstance()
@@ -109,16 +106,16 @@ public class UserService {
                 .add("CN", commonName)
                 .build();
 
+
         UserResponseDto user = findUserByCn(commonName);
+
 
         String newPassword = generatePassword();
 
         ModificationItem[] mods = new ModificationItem[]{
                 new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", newPassword))
         };
-
         ldapTemplate.modifyAttributes(dn, mods);
-
         emailService.sendPassword(user.email(), newPassword);
     }
 
@@ -147,26 +144,37 @@ public class UserService {
     }
 
     public void unlockUser(String commonName) {
-        LdapQuery query = query()
-                .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
-                .where("cn").is(commonName); // Search for the user by 'cn'
+        // First, get the complete DN using findUserByCn
+        UserResponseDto user = findUserByCn(commonName);
+        if (user == null) {
+            throw new RuntimeException("User not found: " + commonName);
+        }
 
-        String distinguishedName = ldapTemplate.search(query, (
-                        AttributesMapper<String>) attributes ->
-                        attributes.get("distinguishedName").get().toString()
-                )
-                .stream().findFirst().orElse(null);
+        // Construct the complete DN including the vendor OU
+        Name dn = LdapNameBuilder.newInstance()
+                .add("OU", PARENT_ORGANIZATIONAL_UNIT)
+                .add("OU", user.vendor())  // Add vendor OU
+                .add("CN", commonName)
+                .build();
+
+        // Get current UAC value
+        LdapQuery query = query()
+                .base(dn.toString())
+                .where("cn").is(commonName);
 
         String userAccountControl = ldapTemplate.search(query, (
                         AttributesMapper<String>) attributes ->
                         attributes.get("userAccountControl").get().toString()
-                )
-                .stream().findFirst().orElse(null);
+                ).stream().findFirst()
+                .orElseThrow(() -> new RuntimeException("Could not get userAccountControl"));
 
+        // Calculate new UAC value
         String newUserAccountControl = String.valueOf(enableUser(userAccountControl));
 
-        ldapTemplate.modifyAttributes(distinguishedName, new ModificationItem[]{
-                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userAccountControl", newUserAccountControl))
+        // Modify the attributes
+        ldapTemplate.modifyAttributes(dn, new ModificationItem[]{
+                new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                        new BasicAttribute("userAccountControl", newUserAccountControl))
         });
     }
 }
