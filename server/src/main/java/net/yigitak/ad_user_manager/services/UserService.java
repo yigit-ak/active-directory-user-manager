@@ -16,6 +16,8 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
+import java.util.Arrays;
+
 import static net.yigitak.ad_user_manager.util.DnExtractor.extractFirstOu;
 import static net.yigitak.ad_user_manager.util.PasswordEncoder.encodePassword;
 import static net.yigitak.ad_user_manager.util.SecurePasswordGenerator.generatePassword;
@@ -100,46 +102,73 @@ public class UserService {
     }
 
     public void resetPassword(String commonName) {
-        // TODO: implementation
+
+        UserResponseDto user = findUserByCn(commonName);
+        if (user == null) {
+            throw new RuntimeException("User not found: " + commonName);
+        }
+
+        // Construct the complete DN including the vendor OU
         Name dn = LdapNameBuilder.newInstance()
                 .add("OU", PARENT_ORGANIZATIONAL_UNIT)
+                .add("OU", user.vendor())  // Add vendor OU
                 .add("CN", commonName)
                 .build();
 
-
-        UserResponseDto user = findUserByCn(commonName);
-
+        System.out.println("dn is created: " + dn);
+        System.out.println("User is found: " + user);
 
         String newPassword = generatePassword();
+
+        System.out.println("New password is generated: " + newPassword);
 
         ModificationItem[] mods = new ModificationItem[]{
                 new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", newPassword))
         };
+
+        System.out.println("Modification items are created: " + Arrays.toString(mods));
+
         ldapTemplate.modifyAttributes(dn, mods);
+
+        System.out.println("Attributes are modified: ");
+
         emailService.sendPassword(user.email(), newPassword);
+
+        System.out.println("Password is sent to the user: " + user.email());
     }
 
     public void lockUser(String commonName) {
-        LdapQuery query = query()
-                .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
-                .where("cn").is(commonName); // Search for the user by 'cn'
+        // First, get the complete DN using findUserByCn
+        UserResponseDto user = findUserByCn(commonName);
+        if (user == null) {
+            throw new RuntimeException("User not found: " + commonName);
+        }
 
-        String distinguishedName = ldapTemplate.search(query, (
-                        AttributesMapper<String>) attributes ->
-                        attributes.get("distinguishedName").get().toString()
-                )
-                .stream().findFirst().orElse(null);
+        // Construct the complete DN including the vendor OU
+        Name dn = LdapNameBuilder.newInstance()
+                .add("OU", PARENT_ORGANIZATIONAL_UNIT)
+                .add("OU", user.vendor())  // Add vendor OU
+                .add("CN", commonName)
+                .build();
+
+        // Get current UAC value
+        LdapQuery query = query()
+                .base(dn.toString())
+                .where("cn").is(commonName);
 
         String userAccountControl = ldapTemplate.search(query, (
                         AttributesMapper<String>) attributes ->
                         attributes.get("userAccountControl").get().toString()
-                )
-                .stream().findFirst().orElse(null);
+                ).stream().findFirst()
+                .orElseThrow(() -> new RuntimeException("Could not get userAccountControl"));
 
+        // Calculate new UAC value
         String newUserAccountControl = String.valueOf(disableAccount(userAccountControl));
 
-        ldapTemplate.modifyAttributes(distinguishedName, new ModificationItem[]{
-                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userAccountControl", newUserAccountControl))
+        // Modify the attributes
+        ldapTemplate.modifyAttributes(dn, new ModificationItem[]{
+                new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                        new BasicAttribute("userAccountControl", newUserAccountControl))
         });
     }
 
