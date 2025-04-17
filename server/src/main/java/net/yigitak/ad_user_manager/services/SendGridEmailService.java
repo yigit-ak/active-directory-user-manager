@@ -23,7 +23,7 @@ public class SendGridEmailService implements EmailService{
     private String fromEmail;
 
     private Content createEmailBody (String password) {
-        return new Content("text/plain", "Your new password is: " + password);
+        return new Content("text/plain", "Your password is: " + password);
     }
 
     private void sendEmail(Mail mail) {
@@ -50,13 +50,26 @@ public class SendGridEmailService implements EmailService{
     }
 
     @Override
-    public void sendPassword(String toEmail, String password) {
+    public void sendAccountCreationMail(String toEmail, String password) {
         Email from = new Email(fromEmail);
         Email to = new Email(toEmail);
 
         Content body = createEmailBody(password);
 
         String subject = "Your Account is Ready!";
+        Mail mail = new Mail(from, subject, to, body);
+
+        sendEmail(mail);
+    }
+
+    @Override
+    public void sendPasswordResetMail(String toEmail, String password) {
+        Email from = new Email(fromEmail);
+        Email to = new Email(toEmail);
+
+        Content body = createEmailBody(password);
+
+        String subject = "Your Password Has Reset!";
         Mail mail = new Mail(from, subject, to, body);
 
         sendEmail(mail);

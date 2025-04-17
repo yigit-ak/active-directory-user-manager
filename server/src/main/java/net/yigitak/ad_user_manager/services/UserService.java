@@ -98,7 +98,7 @@ public class UserService {
 
         unlockUser(commonName);
 
-        emailService.sendPassword(user.email(), pw);
+        emailService.sendAccountCreationMail(user.email(), pw);
     }
 
     public void resetPassword(String commonName) {
@@ -132,7 +132,7 @@ public class UserService {
 
         System.out.println("Attributes are modified: ");
 
-        emailService.sendPassword(user.email(), newPassword);
+        emailService.sendPasswordResetMail(user.email(), newPassword);
 
         System.out.println("Password is sent to the user: " + user.email());
     }
