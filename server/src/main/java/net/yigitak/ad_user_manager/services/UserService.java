@@ -123,9 +123,8 @@ public class UserService {
         System.out.println("New password is generated: " + newPassword);
 
         ModificationItem[] mods = new ModificationItem[]{
-                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", newPassword))
+                new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", encodePassword(newPassword)))
         };
-
         System.out.println("Modification items are created: " + Arrays.toString(mods));
 
         ldapTemplate.modifyAttributes(dn, mods);
