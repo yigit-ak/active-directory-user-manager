@@ -17,9 +17,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/{commonName}")
-    public ResponseEntity<UserResponseDto> getUserByCn(@PathVariable String commonName) {
-        UserResponseDto user = userService.findUserByCn(commonName);
+    @GetMapping("/{cn}")
+    public ResponseEntity<UserResponseDto> getUserByCn(@PathVariable String cn) {
+        UserResponseDto user = userService.findUserByCn(cn);
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
@@ -36,10 +36,16 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{commonName}/reset-password")
-    public ResponseEntity<?> resetPassword(@PathVariable String commonName) {
-        userService.resetPassword(commonName);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{cn}/reset-password")
+    public ResponseEntity<String> resetPassword(@PathVariable String cn) {
+        try {
+            userService.resetPassword(cn);
+            return ResponseEntity.ok("Password reset successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("User not found: " + cn);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to reset password: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{commonName}/lock")
