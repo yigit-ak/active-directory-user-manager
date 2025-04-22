@@ -27,10 +27,13 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody UserCreateDto dto, UriComponentsBuilder uriBuilder) {
-        String newUserCommonName = userService.createUser(dto);
-        URI location = uriBuilder.path("/users/{id}").buildAndExpand(newUserCommonName).toUri();
-        return ResponseEntity.created(location).build();
+    public ResponseEntity<String> createUser(@RequestBody UserCreateDto userDto) {
+        try {
+            userService.createNewUser(userDto);
+            return ResponseEntity.ok("User created successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to create user: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{commonName}/reset-password")
