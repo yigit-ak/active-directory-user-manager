@@ -1,0 +1,100 @@
+openapi: 3.0.1
+info:
+  title: AD User Manager API
+  description: API for managing Active Directory users and vendors
+  version: 1.0.0
+
+paths:
+  /api/v1/users/{cn}:
+    get:
+      summary: Get user by CN
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User found
+        '404':
+          description: User not found
+
+  /api/v1/users:
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateDto'
+      responses:
+        '200':
+          description: User created
+        '500':
+          description: Server error
+
+  /api/v1/users/{cn}/reset-password:
+    put:
+      summary: Reset user password
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Password reset
+        '404':
+          description: User not found
+
+  /api/v1/users/{cn}/lock:
+    put:
+      summary: Lock user account
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User locked
+
+  /api/v1/users/{cn}/unlock:
+    put:
+      summary: Unlock user account
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User unlocked
+
+  /api/v1/vendors:
+    get:
+      summary: Get all vendors
+      responses:
+        '200':
+          description: Vendor list
+
+components:
+  schemas:
+    UserCreateDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        vendor:
+          type: string
