@@ -3,7 +3,6 @@ package net.yigitak.ad_user_manager.controllers;
 import net.yigitak.ad_user_manager.dto.UserCreateDto;
 import net.yigitak.ad_user_manager.dto.UserResponseDto;
 import net.yigitak.ad_user_manager.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
