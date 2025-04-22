@@ -12,6 +12,7 @@ export default [
       ecmaVersion: 2020,
       globals: {
         ...globals.browser,
+        process: 'readonly',
         "__dirname": true
       },
       parserOptions: {
@@ -32,7 +33,7 @@ export default [
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
-      'react/prop-types': 'off', // Disable prop-types validation
+      'react/prop-types': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

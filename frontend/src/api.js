@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = process.env.REACT_APP_API_BASE;
 
 export const getAllVendors = async () => {
   const response = await axios.get(`${API_BASE}/vendors`);
