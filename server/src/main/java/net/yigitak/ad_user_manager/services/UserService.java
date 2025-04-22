@@ -2,6 +2,7 @@ package net.yigitak.ad_user_manager.services;
 
 import net.yigitak.ad_user_manager.dto.UserCreateDto;
 import net.yigitak.ad_user_manager.dto.UserResponseDto;
+import net.yigitak.ad_user_manager.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.AttributesMapper;
@@ -105,7 +106,7 @@ public class UserService {
 
         UserResponseDto user = findUserByCn(commonName);
         if (user == null) {
-            throw new RuntimeException("User not found: " + commonName);
+            throw new UserNotFoundException(commonName);
         }
 
         // Construct the complete DN including the vendor OU
@@ -134,7 +135,7 @@ public class UserService {
         // First, get the complete DN using findUserByCn
         UserResponseDto user = findUserByCn(commonName);
         if (user == null) {
-            throw new RuntimeException("User not found: " + commonName);
+            throw new UserNotFoundException(commonName);
         }
 
         // Construct the complete DN including the vendor OU
@@ -169,7 +170,7 @@ public class UserService {
         // First, get the complete DN using findUserByCn
         UserResponseDto user = findUserByCn(commonName);
         if (user == null) {
-            throw new RuntimeException("User not found: " + commonName);
+            throw new UserNotFoundException(commonName);
         }
 
         // Construct the complete DN including the vendor OU
