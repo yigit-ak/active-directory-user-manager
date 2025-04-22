@@ -48,11 +48,18 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{commonName}/lock")
-    public ResponseEntity<?> lockUserAccount(@PathVariable String commonName) {
-        userService.lockUser(commonName);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{cn}/lock")
+    public ResponseEntity<String> lockUser(@PathVariable String cn) {
+        try {
+            userService.lockUser(cn);
+            return ResponseEntity.ok("User locked successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("User not found: " + cn);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to lock user: " + e.getMessage());
+        }
     }
+
 
     @PutMapping("/{commonName}/unlock")
     public ResponseEntity<?> unlockUserAccount(@PathVariable String commonName) {
