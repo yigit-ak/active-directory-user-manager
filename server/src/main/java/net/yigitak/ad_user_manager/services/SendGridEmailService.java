@@ -7,6 +7,9 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import net.yigitak.ad_user_manager.exceptions.EmailSendException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +17,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class SendGridEmailService implements EmailService{
+public class SendGridEmailService implements EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SendGridEmailService.class);
 
     @Autowired
     private SendGrid sendGrid;
@@ -22,30 +27,28 @@ public class SendGridEmailService implements EmailService{
     @Value("${twilio.sendgrid.from-email}")
     private String fromEmail;
 
-    private Content createEmailBody (String password) {
+    private Content createEmailBody(String password) {
         return new Content("text/plain", "Your password is: " + password);
     }
 
     private void sendEmail(Mail mail) {
         try {
-            // set the SendGrid API endpoint details as described
-            // in the doc (https://docs.sendgrid.com/api-reference/mail-send/mail-send)
             Request request = new Request();
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
 
-            // perform the request and send the email
             Response response = sendGrid.api(request);
             int statusCode = response.getStatusCode();
-            // if the status code is not 2xx
+
             if (statusCode < 200 || statusCode >= 300) {
-                throw new RuntimeException(response.getBody());
+                logger.error("SendGrid API returned non-success status: {} - {}", statusCode, response.getBody());
+                throw new EmailSendException("Failed to send email: " + response.getBody());
             }
+
         } catch (IOException e) {
-            // log the error message in case of network failures
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            logger.error("IOException when sending email via SendGrid", e);
+            throw new EmailSendException("Failed to send email due to IO error", e);
         }
     }
 
@@ -53,12 +56,9 @@ public class SendGridEmailService implements EmailService{
     public void sendAccountCreationMail(String toEmail, String password) {
         Email from = new Email(fromEmail);
         Email to = new Email(toEmail);
-
         Content body = createEmailBody(password);
-
         String subject = "Your Account is Ready!";
         Mail mail = new Mail(from, subject, to, body);
-
         sendEmail(mail);
     }
 
@@ -66,13 +66,9 @@ public class SendGridEmailService implements EmailService{
     public void sendPasswordResetMail(String toEmail, String password) {
         Email from = new Email(fromEmail);
         Email to = new Email(toEmail);
-
         Content body = createEmailBody(password);
-
         String subject = "Your Password Has Reset!";
         Mail mail = new Mail(from, subject, to, body);
-
         sendEmail(mail);
     }
-
 }
