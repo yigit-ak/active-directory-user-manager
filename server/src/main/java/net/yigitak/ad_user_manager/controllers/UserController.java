@@ -1,6 +1,7 @@
 package net.yigitak.ad_user_manager.controllers;
 
 import net.yigitak.ad_user_manager.dto.UserCreateDto;
+import net.yigitak.ad_user_manager.dto.UserResponseDto;
 import net.yigitak.ad_user_manager.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,12 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{commonName}")
-    public ResponseEntity<?> getUser(@PathVariable String commonName) {
-        var userResponse = userService.findUserByCn(commonName);
-        return ResponseEntity.ok(userResponse);
+    public ResponseEntity<UserResponseDto> getUserByCn(@PathVariable String commonName) {
+        UserResponseDto user = userService.findUserByCn(commonName);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping
