@@ -1,55 +1,61 @@
-import GoBack from "../../components/GoBack";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import GoBack from "@/components/GoBack";
+import { getUserByCn } from "@/api.js";
 
-function UserDetails() {
-  const client = { // TODO: fetch data from server
-    id: 'yigit-ak-123',
-    name: 'Yigit',
-    surname: 'Ak',
-    group: 'Interns',
-    email: 'yigit-ak@yigitak.com',
-    phone: '+1 (123) 456-7890',
-    locked: true,
+function UserLookup() {
+  const [userId, setUserId] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    try {
+      await getUserByCn(userId); // Check if user exists
+      navigate(`/user-lookup/${userId}`);
+    } catch (error) {
+      console.error(error);
+      setMessage("User not found.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    setUserId(event.target.value);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSubmit(event);
+    }
   };
 
   return (
-    <div className="user-details-page">
-      <div className="user-info-card">
-        <GoBack link={'/user-lookup'} />
-
-        <div className="info-card-layout-top">
-          <h1 className="info-card-title">{client.id}</h1>
-          {client.locked && <div className="user-locked-warning">User is locked.</div>}
-        </div>
-
-        <div className="info-card-layout-bottom">
-          <div className="info-card-body">
-            <div className="user-info">
-              <span className="info-card-attribute">Name: </span> {client.name}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Surname: </span> {client.surname}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Group: </span> {client.group}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Email: </span> {client.email}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Phone: </span> {client.phone}
-            </div>
-          </div>
-        
-          <div className="user-info-card-buttons">
-            {client.locked ? <button>Unlock User</button> : <button>Lock User</button>}
-            <button>Reset Password</button>
-          </div>
-
-        </div>
-      </div>
+    <div className="user-lookup-page">
+      <form id="user-id-form" onSubmit={handleSubmit}>
+        <GoBack link='/' />
+        <label htmlFor="user-id">User Lookup</label>
+        <input
+          type="text"
+          id="user-id"
+          name="user-id"
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter user Id here"
+          required
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? "Searching..." : "Search"}
+        </button>
+        {message && <div className="info-message">{message}</div>}
+      </form>
     </div>
-  )
+  );
 }
-    
-  export default UserDetails
-  
+
+export default UserLookup;

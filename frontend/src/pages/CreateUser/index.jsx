@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAllVendors, createUser } from "@/api/userApi";
+import { getAllVendors, createUser } from "@/api.js";
 import GoBack from "@/components/GoBack";
 
 function CreateUser() {
