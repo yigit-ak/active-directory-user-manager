@@ -7,26 +7,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+
 @RestController
 @RequestMapping("api/v1/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/{cn}")
     public ResponseEntity<UserResponseDto> getUserByCn(@PathVariable String cn) {
         UserResponseDto user = userService.findUserByCn(cn);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(user);
     }
 
     @PostMapping
     public ResponseEntity<String> createUser(@RequestBody UserCreateDto userDto) {
         userService.createNewUser(userDto);
-        return ResponseEntity.ok("User created successfully.");
+        URI location = URI.create("/api/v1/users/" + userDto.firstName()); // todo: return common name
+        return ResponseEntity.created(location).body("User created successfully.");
     }
 
     @PutMapping("/{cn}/reset-password")

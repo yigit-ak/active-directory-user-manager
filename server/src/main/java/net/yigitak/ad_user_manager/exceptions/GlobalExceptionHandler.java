@@ -12,6 +12,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(AccountControlFetchException.class)
+    public ResponseEntity<String> handleUacFetchFailure(AccountControlFetchException ex) {
+        return ResponseEntity.status(500).body(ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception ex) {
         // Log it, notify, etc.

@@ -2,6 +2,7 @@ package net.yigitak.ad_user_manager.services;
 
 import net.yigitak.ad_user_manager.dto.UserCreateDto;
 import net.yigitak.ad_user_manager.dto.UserResponseDto;
+import net.yigitak.ad_user_manager.exceptions.AccountControlFetchException;
 import net.yigitak.ad_user_manager.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -154,7 +155,7 @@ public class UserService {
                         AttributesMapper<String>) attributes ->
                         attributes.get("userAccountControl").get().toString()
                 ).stream().findFirst()
-                .orElseThrow(() -> new RuntimeException("Could not get userAccountControl"));
+                .orElseThrow(() -> new AccountControlFetchException(commonName));
 
         // Calculate new UAC value
         String newUserAccountControl = String.valueOf(disableAccount(userAccountControl));
@@ -189,7 +190,7 @@ public class UserService {
                         AttributesMapper<String>) attributes ->
                         attributes.get("userAccountControl").get().toString()
                 ).stream().findFirst()
-                .orElseThrow(() -> new RuntimeException("Could not get userAccountControl"));
+                .orElseThrow(() -> new AccountControlFetchException(commonName));
 
         // Calculate new UAC value
         String newUserAccountControl = String.valueOf(enableUser(userAccountControl));
