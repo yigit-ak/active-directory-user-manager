@@ -4,11 +4,14 @@ import GoBack from "@/components/GoBack";
 
 function UserLookup() {
   const [userId, setUserId] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate(`/user-lookup/${userId}`)
+    setLoading(true);
+    navigate(`/user-lookup/${userId}`);
+    setLoading(false);
   };
 
   const handleInputChange = (event) => {
@@ -26,16 +29,22 @@ function UserLookup() {
       <form id="user-id-form" onSubmit={handleSubmit}>
         <GoBack link='/' />
         <label htmlFor="user-id">User Lookup</label>
-        <input type="text" id="user-id" name="user-id"
+        <input
+          type="text"
+          id="user-id"
+          name="user-id"
+          value={userId}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Enter user Id here"
+          placeholder="Enter user ID here"
           required
         />
-        <button type="submit">Search</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Searching..." : "Search"}
+        </button>
       </form>
     </div>
-  )
+  );
 }
-  
-export default UserLookup
+
+export default UserLookup;

@@ -18,9 +18,9 @@ function CreateUser() {
   useEffect(() => {
     getAllVendors()
       .then(setVendors)
-      .catch(err => {
-        console.error(err);
-        setMessage("Failed to load vendors.");
+      .catch(error => {
+        console.error(error);
+        setMessage(error.message || "Failed to load vendors.");
       });
   }, []);
 
@@ -28,14 +28,20 @@ function CreateUser() {
     event.preventDefault();
     setLoading(true);
     setMessage("");
-
+  
     try {
       await createUser(form);
       setMessage("User created successfully.");
-      setForm({ firstName: "", lastName: "", email: "", phoneNumber: "", vendor: "" });
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        vendor: ""
+      });
     } catch (error) {
       console.error(error);
-      setMessage("Failed to create user.");
+      setMessage(error.message || "Failed to create user.");
     } finally {
       setLoading(false);
     }

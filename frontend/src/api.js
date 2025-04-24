@@ -2,32 +2,31 @@ import axios from "axios";
 
 const API_BASE = process.env.REACT_APP_API_BASE;
 
-export const getAllVendors = async () => {
-  const response = await axios.get(`${API_BASE}/vendors`);
-  return response.data;
+const handleRequest = async (requestFn) => {
+  try {
+    const response = await requestFn();
+    return response.data;
+  } catch (error) {
+    console.error("API call failed:", error);
+    const message = error.response?.data || "Unexpected error occurred.";
+    throw new Error(message);
+  }
 };
 
-export const getUserByCn = async (cn) => {
-  const response = await axios.get(`${API_BASE}/users/${cn}`);
-  return response.data;
-};
+export const getAllVendors = () =>
+  handleRequest(() => axios.get(`${API_BASE}/vendors`));
 
-export const createUser = async (userData) => {
-  const response = await axios.post(`${API_BASE}/users`, userData);
-  return response.data;
-};
+export const getUserByCn = (cn) =>
+  handleRequest(() => axios.get(`${API_BASE}/users/${cn}`));
 
-export const resetPassword = async (cn) => {
-  const response = await axios.put(`${API_BASE}/users/${cn}/reset-password`);
-  return response.data;
-};
+export const createUser = (userData) =>
+  handleRequest(() => axios.post(`${API_BASE}/users`, userData));
 
-export const lockUser = async (cn) => {
-  const response = await axios.put(`${API_BASE}/users/${cn}/lock`);
-  return response.data;
-};
+export const resetPassword = (cn) =>
+  handleRequest(() => axios.put(`${API_BASE}/users/${cn}/reset-password`));
 
-export const unlockUser = async (cn) => {
-  const response = await axios.put(`${API_BASE}/users/${cn}/unlock`);
-  return response.data;
-};
+export const lockUser = (cn) =>
+  handleRequest(() => axios.put(`${API_BASE}/users/${cn}/lock`));
+
+export const unlockUser = (cn) =>
+  handleRequest(() => axios.put(`${API_BASE}/users/${cn}/unlock`));
