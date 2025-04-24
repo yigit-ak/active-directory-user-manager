@@ -37,5 +37,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Failed to send email: " + ex.getMessage());
     }
+
+    @ExceptionHandler(VendorFetchException.class)
+    public ResponseEntity<String> handleVendorFetch(VendorFetchException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to retrieve vendor list: " + ex.getMessage());
+    }
+
 }
 
