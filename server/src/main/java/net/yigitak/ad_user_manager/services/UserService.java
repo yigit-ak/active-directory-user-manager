@@ -46,21 +46,21 @@ public class UserService {
 
     public UserResponseDto findUserByCn(String commonName) {
         LdapQuery query = query()
-                .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)) // Use base DN dynamically
-                .where("cn").is(commonName); // Search for the user by 'cn'
+                .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT))
+                .where("cn").is(commonName);
 
-        // Use an AttributesMapper to map LDAP attributes to UserDto
         return ldapTemplate.search(query, (AttributesMapper<UserResponseDto>) attributes -> new UserResponseDto(
-                extractFirstOu(attributes.get("distinguishedName").get().toString()),
-                attributes.get("cn").get().toString(),
-                attributes.get("sAMAccountName").get().toString(),
-                attributes.get("displayName").get().toString(),
-                attributes.get("givenName").get().toString(),
-                attributes.get("sn").get().toString(),
-                attributes.get("mail").get().toString(),
-                attributes.get("telephoneNumber").get().toString(),
-                isAccountEnabled(attributes.get("userAccountControl").get().toString())
-        )).stream().findFirst().orElse(null); // Assuming only one user should match, return null if none found
+                        extractFirstOu(attributes.get("distinguishedName").get().toString()),
+                        attributes.get("cn").get().toString(),
+                        attributes.get("sAMAccountName").get().toString(),
+                        attributes.get("displayName").get().toString(),
+                        attributes.get("givenName").get().toString(),
+                        attributes.get("sn").get().toString(),
+                        attributes.get("mail").get().toString(),
+                        attributes.get("telephoneNumber").get().toString(),
+                        isAccountEnabled(attributes.get("userAccountControl").get().toString())
+                )).stream().findFirst()
+                .orElseThrow(() -> new UserNotFoundException(commonName));
     }
 
     public void createNewUser(UserCreateDto user) {
@@ -106,9 +106,6 @@ public class UserService {
     public void resetPassword(String commonName) {
 
         UserResponseDto user = findUserByCn(commonName);
-        if (user == null) {
-            throw new UserNotFoundException(commonName);
-        }
 
         // Construct the complete DN including the vendor OU
         Name dn = LdapNameBuilder.newInstance()
@@ -135,9 +132,6 @@ public class UserService {
     public void lockUser(String commonName) {
         // First, get the complete DN using findUserByCn
         UserResponseDto user = findUserByCn(commonName);
-        if (user == null) {
-            throw new UserNotFoundException(commonName);
-        }
 
         // Construct the complete DN including the vendor OU
         Name dn = LdapNameBuilder.newInstance()
@@ -170,9 +164,6 @@ public class UserService {
     public void unlockUser(String commonName) {
         // First, get the complete DN using findUserByCn
         UserResponseDto user = findUserByCn(commonName);
-        if (user == null) {
-            throw new UserNotFoundException(commonName);
-        }
 
         // Construct the complete DN including the vendor OU
         Name dn = LdapNameBuilder.newInstance()
