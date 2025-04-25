@@ -4,6 +4,8 @@ import net.yigitak.ad_user_manager.dto.UserCreateDto;
 import net.yigitak.ad_user_manager.dto.UserResponseDto;
 import net.yigitak.ad_user_manager.exceptions.AccountControlFetchException;
 import net.yigitak.ad_user_manager.exceptions.UserNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.AttributesMapper;
@@ -18,8 +20,6 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
-import java.util.Arrays;
-
 import static net.yigitak.ad_user_manager.util.DnExtractor.extractFirstOu;
 import static net.yigitak.ad_user_manager.util.PasswordEncoder.encodePassword;
 import static net.yigitak.ad_user_manager.util.SecurePasswordGenerator.generatePassword;
@@ -28,6 +28,8 @@ import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 @Service
 public class UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Value("${parent-organizational-unit}")
     private String PARENT_ORGANIZATIONAL_UNIT;
@@ -45,6 +47,8 @@ public class UserService {
     private EmailService emailService;
 
     public UserResponseDto findUserByCn(String commonName) {
+        logger.debug("Searching user with CN={}", commonName); 
+
         LdapQuery query = query()
                 .base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT))
                 .where("cn").is(commonName);
@@ -64,18 +68,19 @@ public class UserService {
     }
 
     public void createNewUser(UserCreateDto user) {
-        String fullName = "%s %s".formatted(user.firstName(), user.lastName()); // what if 2 names or 2 surnames
+        logger.info("Creating new user: firstName={}, lastName={}, vendor={}", user.firstName(), user.lastName(), user.vendor()); 
+
+        String fullName = "%s %s".formatted(user.firstName(), user.lastName());
         String commonName = "s@%s.%s".formatted(user.firstName(), user.lastName());
 
         Name dn = LdapNameBuilder.newInstance()
                 .add("OU", PARENT_ORGANIZATIONAL_UNIT)
                 .add("OU", user.vendor())
-                .add("CN", commonName) // Common Name
+                .add("CN", commonName)
                 .build();
 
-        DirContextAdapter context = new DirContextAdapter(dn); // new LDAP context for the user entry
+        DirContextAdapter context = new DirContextAdapter(dn);
 
-        // object classes for the user
         context.setAttributeValues("objectClass", new String[]{
                 "top",
                 "person",
@@ -87,30 +92,33 @@ public class UserService {
 
         context.setAttributeValue("cn", commonName);
         context.setAttributeValue("description", DESCRIPTION);
-        context.setAttributeValue("sAMAccountName", "%s.%s".formatted(user.firstName(), user.lastName())); // TODO: change
+        context.setAttributeValue("sAMAccountName", "%s.%s".formatted(user.firstName(), user.lastName()));
         context.setAttributeValue("displayName", fullName);
         context.setAttributeValue("givenName", user.firstName());
         context.setAttributeValue("mail", user.email());
         context.setAttributeValue("sn", user.lastName());
         context.setAttributeValue("telephoneNumber", user.phoneNumber());
         context.setAttributeValue("unicodePwd", encodePassword(pw));
-        context.setAttributeValue("userPrincipalName", "%s.%s@yigit.local".formatted(user.firstName(), user.lastName())); // TODO: change
+        context.setAttributeValue("userPrincipalName", user.email());
 
         ldapTemplate.bind(context);
+        logger.info("LDAP entry created for user: {}", commonName); 
 
         unlockUser(commonName);
+        logger.info("User account unlocked after creation: {}", commonName); 
 
         emailService.sendAccountCreationMail(user.email(), pw);
+        logger.info("Account creation email sent to: {}", user.email()); 
     }
 
     public void resetPassword(String commonName) {
+        logger.info("Resetting password for user: {}", commonName); 
 
         UserResponseDto user = findUserByCn(commonName);
 
-        // Construct the complete DN including the vendor OU
         Name dn = LdapNameBuilder.newInstance()
                 .add("OU", PARENT_ORGANIZATIONAL_UNIT)
-                .add("OU", user.vendor())  // Add vendor OU
+                .add("OU", user.vendor())
                 .add("CN", commonName)
                 .build();
 
@@ -121,26 +129,23 @@ public class UserService {
         };
 
         ldapTemplate.modifyAttributes(dn, mods);
-
-        System.out.println("Attributes are modified: ");
+        logger.info("Password attribute updated in LDAP for user: {}", commonName); 
 
         emailService.sendPasswordResetMail(user.email(), newPassword);
-
-        System.out.println("Password is sent to the user: " + user.email());
+        logger.info("Password reset email sent to user: {}", user.email()); 
     }
 
     public void lockUser(String commonName) {
-        // First, get the complete DN using findUserByCn
+        logger.info("Locking user account: {}", commonName); 
+
         UserResponseDto user = findUserByCn(commonName);
 
-        // Construct the complete DN including the vendor OU
         Name dn = LdapNameBuilder.newInstance()
                 .add("OU", PARENT_ORGANIZATIONAL_UNIT)
-                .add("OU", user.vendor())  // Add vendor OU
+                .add("OU", user.vendor())
                 .add("CN", commonName)
                 .build();
 
-        // Get current UAC value
         LdapQuery query = query()
                 .base(dn.toString())
                 .where("cn").is(commonName);
@@ -151,28 +156,27 @@ public class UserService {
                 ).stream().findFirst()
                 .orElseThrow(() -> new AccountControlFetchException(commonName));
 
-        // Calculate new UAC value
         String newUserAccountControl = String.valueOf(disableAccount(userAccountControl));
 
-        // Modify the attributes
         ldapTemplate.modifyAttributes(dn, new ModificationItem[]{
                 new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                         new BasicAttribute("userAccountControl", newUserAccountControl))
         });
+
+        logger.info("User account locked successfully: {}", commonName); 
     }
 
     public void unlockUser(String commonName) {
-        // First, get the complete DN using findUserByCn
+        logger.info("Unlocking user account: {}", commonName); 
+
         UserResponseDto user = findUserByCn(commonName);
 
-        // Construct the complete DN including the vendor OU
         Name dn = LdapNameBuilder.newInstance()
                 .add("OU", PARENT_ORGANIZATIONAL_UNIT)
-                .add("OU", user.vendor())  // Add vendor OU
+                .add("OU", user.vendor())
                 .add("CN", commonName)
                 .build();
 
-        // Get current UAC value
         LdapQuery query = query()
                 .base(dn.toString())
                 .where("cn").is(commonName);
@@ -183,13 +187,13 @@ public class UserService {
                 ).stream().findFirst()
                 .orElseThrow(() -> new AccountControlFetchException(commonName));
 
-        // Calculate new UAC value
         String newUserAccountControl = String.valueOf(enableUser(userAccountControl));
 
-        // Modify the attributes
         ldapTemplate.modifyAttributes(dn, new ModificationItem[]{
                 new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                         new BasicAttribute("userAccountControl", newUserAccountControl))
         });
+
+        logger.info("User account unlocked successfully: {}", commonName); 
     }
 }

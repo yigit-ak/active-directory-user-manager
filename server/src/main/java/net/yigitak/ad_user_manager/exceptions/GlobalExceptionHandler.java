@@ -19,35 +19,41 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
+        logger.warn("User not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(AccountControlFetchException.class)
     public ResponseEntity<String> handleUacFetchFailure(AccountControlFetchException ex) {
-        return ResponseEntity.status(500).body(ex.getMessage());
+        logger.error("Failed to fetch userAccountControl attribute: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception ex) {
-        // todo: Log it, notify, etc.
+        logger.error("Unhandled exception occurred", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Internal server error: " + ex.getMessage());
     }
 
     @ExceptionHandler(EmailSendException.class)
     public ResponseEntity<String> handleEmailSendException(EmailSendException ex) {
+        logger.error("Failed to send email: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Failed to send email: " + ex.getMessage());
     }
 
     @ExceptionHandler(VendorFetchException.class)
     public ResponseEntity<String> handleVendorFetch(VendorFetchException ex) {
+        logger.error("Failed to fetch vendor list: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Failed to retrieve vendor list: " + ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        logger.warn("Validation failed: {}", ex.getMessage());
+
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
@@ -55,4 +61,3 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 }
-
