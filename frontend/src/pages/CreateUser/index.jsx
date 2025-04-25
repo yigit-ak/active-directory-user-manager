@@ -14,6 +14,7 @@ function CreateUser() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     getAllVendors()
@@ -24,11 +25,17 @@ function CreateUser() {
       });
   }, []);
 
+  const handleInputChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setFieldErrors({ ...fieldErrors, [e.target.name]: null }); // Clear field-specific error on change
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setMessage("");
-  
+    setFieldErrors({});
+
     try {
       await createUser(form);
       setMessage("User created successfully.");
@@ -41,7 +48,14 @@ function CreateUser() {
       });
     } catch (error) {
       console.error(error);
-      setMessage(error.message || "Failed to create user.");
+
+      // Check if backend sent validation errors
+      if (error.response?.status === 400 && typeof error.response.data === "object") {
+        setFieldErrors(error.response.data); // Set per-field errors
+        setMessage("Please fix the errors and try again.");
+      } else {
+        setMessage(error.message || "Failed to create user.");
+      }
     } finally {
       setLoading(false);
     }
@@ -63,8 +77,9 @@ function CreateUser() {
               placeholder="Write here"
               required
               value={form.firstName}
-              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+              onChange={handleInputChange}
             />
+            {fieldErrors.firstName && <small className="error-text">{fieldErrors.firstName}</small>}
           </div>
 
           <div className="create-user-form-partition">
@@ -76,8 +91,9 @@ function CreateUser() {
               placeholder="Write here"
               required
               value={form.lastName}
-              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              onChange={handleInputChange}
             />
+            {fieldErrors.lastName && <small className="error-text">{fieldErrors.lastName}</small>}
           </div>
 
           <div className="create-user-form-partition">
@@ -89,8 +105,9 @@ function CreateUser() {
               placeholder="Write here"
               required
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={handleInputChange}
             />
+            {fieldErrors.email && <small className="error-text">{fieldErrors.email}</small>}
           </div>
 
           <div className="create-user-form-partition">
@@ -102,8 +119,9 @@ function CreateUser() {
               placeholder="Write here"
               required
               value={form.phoneNumber}
-              onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+              onChange={handleInputChange}
             />
+            {fieldErrors.phoneNumber && <small className="error-text">{fieldErrors.phoneNumber}</small>}
           </div>
 
           <div className="create-user-form-partition">
@@ -113,7 +131,7 @@ function CreateUser() {
               name="vendor"
               required
               value={form.vendor}
-              onChange={(e) => setForm({ ...form, vendor: e.target.value })}
+              onChange={handleInputChange}
             >
               <option value="">Select vendor</option>
               {vendors.map((v) => (
@@ -122,6 +140,7 @@ function CreateUser() {
                 </option>
               ))}
             </select>
+            {fieldErrors.vendor && <small className="error-text">{fieldErrors.vendor}</small>}
             <small>*If the vendor is not in the list, open a new request.</small>
           </div>
         </div>

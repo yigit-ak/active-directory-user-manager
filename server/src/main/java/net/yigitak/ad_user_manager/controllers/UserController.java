@@ -1,5 +1,6 @@
 package net.yigitak.ad_user_manager.controllers;
 
+import jakarta.validation.Valid;
 import net.yigitak.ad_user_manager.dto.UserCreateDto;
 import net.yigitak.ad_user_manager.dto.UserResponseDto;
 import net.yigitak.ad_user_manager.services.UserService;
@@ -25,7 +26,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createUser(@RequestBody UserCreateDto userDto) {
+    public ResponseEntity<String> createUser(@Valid @RequestBody UserCreateDto userDto) {
         userService.createNewUser(userDto);
         URI location = URI.create("/api/v1/users/" + userDto.firstName()); // todo: return common name
         return ResponseEntity.created(location).body("User created successfully.");
