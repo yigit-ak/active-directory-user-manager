@@ -26,6 +26,12 @@ import static net.yigitak.ad_user_manager.util.SecurePasswordGenerator.generateP
 import static net.yigitak.ad_user_manager.util.UserAccountControlUtil.*;
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
+/**
+ * Service for managing users in Active Directory via LDAP operations.
+ * <p>
+ * Provides methods for creating users, resetting passwords, locking and unlocking accounts,
+ * as well as logging user actions.
+ */
 @Service
 public class UserService {
 
@@ -44,12 +50,26 @@ public class UserService {
     private final EmailService emailService;
     private final ActionLogService actionLogService;
 
+    /**
+     * Constructs a UserService with required dependencies.
+     *
+     * @param ldapTemplate      the LDAP template for performing LDAP operations
+     * @param emailService      the service for sending emails
+     * @param actionLogService  the service for logging user actions
+     */
     public UserService(LdapTemplate ldapTemplate, EmailService emailService, ActionLogService actionLogService) {
         this.ldapTemplate = ldapTemplate;
         this.emailService = emailService;
         this.actionLogService = actionLogService;
     }
 
+    /**
+     * Finds a user in Active Directory by their common name (CN).
+     *
+     * @param commonName the CN of the user
+     * @return the user details as {@link UserResponseDto}
+     * @throws UserNotFoundException if the user is not found
+     */
     public UserResponseDto findUserByCn(String commonName) {
         logger.debug("Searching user with CN={}", commonName);
 
@@ -58,6 +78,13 @@ public class UserService {
         return ldapTemplate.search(query, (AttributesMapper<UserResponseDto>) attributes -> new UserResponseDto(extractFirstOu(attributes.get("distinguishedName").get().toString()), attributes.get("cn").get().toString(), attributes.get("sAMAccountName").get().toString(), attributes.get("displayName").get().toString(), attributes.get("givenName").get().toString(), attributes.get("sn").get().toString(), attributes.get("mail").get().toString(), attributes.get("telephoneNumber").get().toString(), isAccountEnabled(attributes.get("userAccountControl").get().toString()))).stream().findFirst().orElseThrow(() -> new UserNotFoundException(commonName));
     }
 
+
+    /**
+     * Creates a new user in Active Directory with a generated password.
+     * Sends an account creation email and logs the action.
+     *
+     * @param user the user data to create
+     */
     public void createNewUser(UserCreateDto user) {
         logger.info("Creating new user: firstName={}, lastName={}, vendor={}", user.firstName(), user.lastName(), user.vendor());
 
@@ -94,6 +121,12 @@ public class UserService {
         actionLogService.logAction(ActionType.CREATE_USER, commonName);
     }
 
+    /**
+     * Resets the password of an existing user, sends the new password by email, and logs the action.
+     *
+     * @param commonName the CN of the user
+     * @throws UserNotFoundException if the user is not found
+     */
     public void resetPassword(String commonName) {
         logger.info("Resetting password for user: {}", commonName);
 
@@ -113,6 +146,12 @@ public class UserService {
         actionLogService.logAction(ActionType.RESET_PASSWORD, commonName);
     }
 
+    /**
+     * Locks (disables) a user account in Active Directory and logs the action.
+     *
+     * @param commonName the CN of the user to lock
+     * @throws UserNotFoundException if the user is not found
+     */
     public void lockUser(String commonName) {
         logger.info("Locking user account: {}", commonName);
 
@@ -132,6 +171,13 @@ public class UserService {
         actionLogService.logAction(ActionType.LOCK_USER, commonName);
     }
 
+
+    /**
+     * Unlocks (enables) a previously disabled user account in Active Directory and logs the action.
+     *
+     * @param commonName the CN of the user to unlock
+     * @throws UserNotFoundException if the user is not found
+     */
     public void unlockUser(String commonName) {
         logger.info("Unlocking user account: {}", commonName);
 

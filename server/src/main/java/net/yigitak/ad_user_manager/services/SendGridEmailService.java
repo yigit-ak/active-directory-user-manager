@@ -16,6 +16,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+/**
+ * Implementation of {@link EmailService} using SendGrid API.
+ * <p>
+ * Responsible for sending account creation and password reset emails to users.
+ */
 @Service
 public class SendGridEmailService implements EmailService {
 
@@ -27,10 +32,22 @@ public class SendGridEmailService implements EmailService {
     @Value("${twilio.sendgrid.from-email}")
     private String fromEmail;
 
+    /**
+     * Creates the body content for the email, including the given password.
+     *
+     * @param password the password to include in the email body
+     * @return the email content
+     */
     private Content createEmailBody(String password) {
         return new Content("text/plain", "Your password is: " + password);
     }
 
+    /**
+     * Sends an email using the SendGrid API.
+     *
+     * @param mail the email to send
+     * @throws EmailSendException if sending fails
+     */
     private void sendEmail(Mail mail) {
         try {
             Request request = new Request();
@@ -52,6 +69,12 @@ public class SendGridEmailService implements EmailService {
         }
     }
 
+    /**
+     * Sends an account creation email to the specified user.
+     *
+     * @param toEmail  the recipient's email address
+     * @param password the generated password to include in the email
+     */
     @Override
     public void sendAccountCreationMail(String toEmail, String password) {
         Email from = new Email(fromEmail);
@@ -62,6 +85,12 @@ public class SendGridEmailService implements EmailService {
         sendEmail(mail);
     }
 
+    /**
+     * Sends a password reset email to the specified user.
+     *
+     * @param toEmail  the recipient's email address
+     * @param password the new password to include in the email
+     */
     @Override
     public void sendPasswordResetMail(String toEmail, String password) {
         Email from = new Email(fromEmail);

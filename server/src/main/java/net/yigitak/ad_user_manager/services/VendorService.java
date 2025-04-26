@@ -13,6 +13,11 @@ import javax.naming.Name;
 import javax.naming.directory.SearchControls;
 import java.util.List;
 
+/**
+ * Service for fetching vendor (organizational unit) information from Active Directory.
+ * <p>
+ * Vendors are retrieved from a specified parent organizational unit (OU) in the LDAP directory.
+ */
 @Service
 public class VendorService {
 
@@ -22,6 +27,12 @@ public class VendorService {
     @Autowired
     private LdapTemplate ldapTemplate;
 
+    /**
+     * Retrieves all vendor organizational units (OUs) under the configured parent OU.
+     *
+     * @return a list of {@link VendorDto} representing vendors
+     * @throws VendorFetchException if fetching from LDAP fails or required attributes are missing
+     */
     public List<VendorDto> getAll() {
         try {
             Name baseDn = LdapNameBuilder.newInstance().add("OU", PARENT_OU).build();
