@@ -13,18 +13,24 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ad-user-manager</name>
 	<description>Active Directory User Manager</description>
-	<url/>
+	<url>https://github.com/yigit-ak/ad-user-manager</url>
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>yigit-ak</id>
+			<name>Yigit Ak</name>
+		</developer>
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:git://github.com/yigit-ak/ad-user-manager.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/yigit-ak/ad-user-manager.git</developerConnection>
+		<url>https://github.com/yigit-ak/ad-user-manager</url>
+		<tag>HEAD</tag>
 	</scm>
 	<properties>
 		<java.version>21</java.version>
@@ -43,6 +49,7 @@
 		<dependency>
 			<groupId>com.azure.spring</groupId>
 			<artifactId>spring-cloud-azure-starter-active-directory</artifactId>
+			<version>5.10.0</version>
 		</dependency>
 
 		<dependency>
@@ -90,7 +97,18 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.12.1</version>
+				<configuration>
+					<source>21</source>
+					<target>21</target>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
 
 </project>
