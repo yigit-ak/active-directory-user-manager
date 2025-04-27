@@ -4,7 +4,7 @@ import net.yigitak.ad_user_manager.entities.ActionLog;
 import net.yigitak.ad_user_manager.enums.ActionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import repositories.ActionLogRepository;
+import net.yigitak.ad_user_manager.repositories.ActionLogRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
