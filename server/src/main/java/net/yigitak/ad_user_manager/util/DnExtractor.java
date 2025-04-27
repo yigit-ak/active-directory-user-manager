@@ -15,9 +15,13 @@ public class DnExtractor {
      * @return the first organizational unit (OU) found, or {@code null} if none is found
      */
     public static String extractFirstOu(String dn) {
+        if (dn == null || dn.isBlank()) {
+            return null;
+        }
+
         for (String part : dn.split(",")) {
-            if (part.startsWith("OU=")) {
-                return part.substring(3); // Remove "OU=" prefix
+            if (part.trim().toUpperCase().startsWith("OU=")) {
+                return part.trim().substring(3); // Remove "OU=" prefix
             }
         }
         return null;

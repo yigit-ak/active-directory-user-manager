@@ -2,9 +2,9 @@ package net.yigitak.ad_user_manager.services;
 
 import net.yigitak.ad_user_manager.dto.UserCreateDto;
 import net.yigitak.ad_user_manager.dto.UserResponseDto;
+import net.yigitak.ad_user_manager.enums.ActionType;
 import net.yigitak.ad_user_manager.exceptions.AccountControlFetchException;
 import net.yigitak.ad_user_manager.exceptions.UserNotFoundException;
-import net.yigitak.ad_user_manager.enums.ActionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +36,9 @@ import static org.springframework.ldap.query.LdapQueryBuilder.query;
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final LdapTemplate ldapTemplate;
+    private final EmailService emailService;
+    private final ActionLogService actionLogService;
 
     @Value("${parent-organizational-unit}")
     private String PARENT_ORGANIZATIONAL_UNIT;
@@ -46,16 +49,12 @@ public class UserService {
     @Value("${user-creation-description}")
     private String DESCRIPTION;
 
-    private final LdapTemplate ldapTemplate;
-    private final EmailService emailService;
-    private final ActionLogService actionLogService;
-
     /**
      * Constructs a UserService with required dependencies.
      *
-     * @param ldapTemplate      the LDAP template for performing LDAP operations
-     * @param emailService      the service for sending emails
-     * @param actionLogService  the service for logging user actions
+     * @param ldapTemplate     the LDAP template for performing LDAP operations
+     * @param emailService     the service for sending emails
+     * @param actionLogService the service for logging user actions
      */
     public UserService(LdapTemplate ldapTemplate, EmailService emailService, ActionLogService actionLogService) {
         this.ldapTemplate = ldapTemplate;
@@ -75,7 +74,23 @@ public class UserService {
 
         LdapQuery query = query().base("ou=%s".formatted(PARENT_ORGANIZATIONAL_UNIT)).where("cn").is(commonName);
 
-        return ldapTemplate.search(query, (AttributesMapper<UserResponseDto>) attributes -> new UserResponseDto(extractFirstOu(attributes.get("distinguishedName").get().toString()), attributes.get("cn").get().toString(), attributes.get("sAMAccountName").get().toString(), attributes.get("displayName").get().toString(), attributes.get("givenName").get().toString(), attributes.get("sn").get().toString(), attributes.get("mail").get().toString(), attributes.get("telephoneNumber").get().toString(), isAccountEnabled(attributes.get("userAccountControl").get().toString()))).stream().findFirst().orElseThrow(() -> new UserNotFoundException(commonName));
+        return ldapTemplate.search(
+                        query,
+                        (AttributesMapper<UserResponseDto>) attributes -> new UserResponseDto(
+                                commonName,
+                                extractFirstOu(attributes.get("distinguishedName").get().toString()),
+                                attributes.get("cn").get().toString(),
+                                attributes.get("sAMAccountName").get().toString(),
+                                attributes.get("displayName").get().toString(),
+                                attributes.get("givenName").get().toString(),
+                                attributes.get("sn").get().toString(),
+                                attributes.get("mail").get().toString(),
+                                attributes.get("telephoneNumber").get().toString(),
+                                isAccountEnabled(attributes.get("userAccountControl").get().toString())
+                        )
+                ).stream()
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException(commonName));
     }
 
 

@@ -2,7 +2,6 @@ package net.yigitak.ad_user_manager.services;
 
 import net.yigitak.ad_user_manager.dto.VendorDto;
 import net.yigitak.ad_user_manager.exceptions.VendorFetchException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
@@ -21,11 +20,13 @@ import java.util.List;
 @Service
 public class VendorService {
 
+    private final LdapTemplate ldapTemplate;
     @Value("${parent-organizational-unit}")
     private String PARENT_OU;
 
-    @Autowired
-    private LdapTemplate ldapTemplate;
+    public VendorService(LdapTemplate ldapTemplate) {
+        this.ldapTemplate = ldapTemplate;
+    }
 
     /**
      * Retrieves all vendor organizational units (OUs) under the configured parent OU.

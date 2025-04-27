@@ -1,7 +1,8 @@
 package net.yigitak.ad_user_manager.entities;
 
-import net.yigitak.ad_user_manager.enums.ActionType;
 import jakarta.persistence.*;
+import net.yigitak.ad_user_manager.enums.ActionType;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
