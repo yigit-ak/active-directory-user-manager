@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>net.yigitak</groupId>
 	<artifactId>ad-user-manager</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>3.4.5</version>
 	<name>ad-user-manager</name>
 	<description>Active Directory User Manager</description>
 	<url>https://github.com/yigit-ak/ad-user-manager</url>
@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>com.azure.spring</groupId>
 			<artifactId>spring-cloud-azure-starter-active-directory</artifactId>
-			<version>5.10.0</version>
+			<version>5.22.0</version>
 		</dependency>
 
 		<dependency>

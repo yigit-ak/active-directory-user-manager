@@ -123,7 +123,7 @@ public class UserService {
         context.setAttributeValue("sn", user.lastName());
         context.setAttributeValue("telephoneNumber", user.phoneNumber());
         context.setAttributeValue("unicodePwd", encodePassword(pw));
-        context.setAttributeValue("userPrincipalName", user.email());
+        context.setAttributeValue("userPrincipalName", "%s.%s@%s".formatted(user.firstName(), user.lastName(), user.vendor()));
 
         ldapTemplate.bind(context);
         logger.info("LDAP entry created for user: {}", commonName);

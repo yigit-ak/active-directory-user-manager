@@ -1,10 +1,15 @@
 import axios from "axios";
 
-const API_BASE = process.env.REACT_APP_API_BASE;
+const API_BASE = "http://localhost:8080/api/v1";
 
-const handleRequest = async (requestFn) => {
+const axiosInstance = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
+
+const handleRequest = async (requestFunction) => {
   try {
-    const response = await requestFn();
+    const response = await requestFunction();
     return response.data;
   } catch (error) {
     console.error("API call failed:", error);
@@ -14,19 +19,22 @@ const handleRequest = async (requestFn) => {
 };
 
 export const getAllVendors = () =>
-  handleRequest(() => axios.get(`${API_BASE}/vendors`));
+  handleRequest(() => axiosInstance.get("/vendors"));
 
 export const getUserByCn = (cn) =>
-  handleRequest(() => axios.get(`${API_BASE}/users/${cn}`));
+  handleRequest(() => axiosInstance.get(`/users/${cn}`));
 
 export const createUser = (userData) =>
-  handleRequest(() => axios.post(`${API_BASE}/users`, userData));
+  handleRequest(() => axiosInstance.post(`/users`, userData));
 
 export const resetPassword = (cn) =>
-  handleRequest(() => axios.put(`${API_BASE}/users/${cn}/reset-password`));
+  handleRequest(() => axiosInstance.put(`/users/${cn}/reset-password`));
 
 export const lockUser = (cn) =>
-  handleRequest(() => axios.put(`${API_BASE}/users/${cn}/lock`));
+  handleRequest(() => axiosInstance.put(`/users/${cn}/lock`));
 
 export const unlockUser = (cn) =>
-  handleRequest(() => axios.put(`${API_BASE}/users/${cn}/unlock`));
+  handleRequest(() => axiosInstance.put(`/users/${cn}/unlock`));
+
+export const checkAuth = () =>
+  handleRequest(() => axiosInstance.get("/auth"));
