@@ -2,7 +2,7 @@
 
 This is a full-stack web application built with **Spring Boot** and **React** that allows authenticated users to create, search, and manage users in **Active Directory (AD)** using LDAP. It also supports SSO via OAuth2 and sends credentials via email using SendGrid.
 
----
+ 
 
 ## 🚀 Features
 
@@ -14,14 +14,14 @@ This is a full-stack web application built with **Spring Boot** and **React** th
 - 📦 Centralized error handling with custom exceptions
 - 🧪 Input validation on both frontend and backend
 
----
+ 
 
 ## 🛠️ Tech Stack
 
 **Backend:** Spring Boot 3, Spring Security, OAuth2 Client, Java  
 **Frontend:** React, React Router, Axios
 
----
+ 
 
 ## 📦 Required Packages
 
@@ -39,7 +39,7 @@ This is a full-stack web application built with **Spring Boot** and **React** th
 - `axios`
 - `vite` (or `create-react-app` depending on setup)
 
----
+ 
 
 ## 🔧 Installation & Running
 
@@ -59,19 +59,19 @@ npm install
 npm run dev
 ```
 
----
+ 
 
 ## 🖼️ UI Preview
 
 _Add screenshots or GIFs here (e.g., `assets/preview.gif`, `images/ui.png`)_
 
----
+ 
 
 ## 📄 License
 
 MIT License – Feel free to use, modify, and share.
 
----
+ 
 
 ## 👨‍💼 Author
 
