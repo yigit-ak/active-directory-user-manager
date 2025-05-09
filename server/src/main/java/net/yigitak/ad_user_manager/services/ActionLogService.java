@@ -6,7 +6,7 @@ import net.yigitak.ad_user_manager.repositories.ActionLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 /**
@@ -35,13 +35,11 @@ public class ActionLogService {
     /**
      * Retrieves the username (email) of the currently authenticated user.
      *
-     * @return the username (email) if available, otherwise "UNKNOWN_USER"
+     * @return the username if available
      */
     public String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser) {
-            return oidcUser.getEmail();
-        }
-        return "UNKNOWN_USER";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        OAuth2User user = (OAuth2User) auth.getPrincipal();
+        return (String) user.getAttributes().get("name");
     }
 }

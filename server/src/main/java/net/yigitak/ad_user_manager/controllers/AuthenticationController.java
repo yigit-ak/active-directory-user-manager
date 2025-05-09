@@ -18,8 +18,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String email = principal.getAttribute("email");
-        System.out.println("Authenticated user: " + email);
-        return ResponseEntity.ok(email != null ? email : "Unknown user");
+        String name = principal.getAttribute("name");
+        return ResponseEntity.ok(name != null ? name : "Unknown user");
     }
 }
