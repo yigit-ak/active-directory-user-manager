@@ -1,11 +1,11 @@
 package net.yigitak.ad_user_manager.controllers;
 
+import jakarta.validation.Valid;
 import net.yigitak.ad_user_manager.dto.UserCreateDto;
+import net.yigitak.ad_user_manager.dto.UserResponseDto;
 import net.yigitak.ad_user_manager.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
@@ -13,38 +13,40 @@ import java.net.URI;
 @RequestMapping("api/v1/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @GetMapping("/{commonName}")
-    public ResponseEntity<?> getUser(@PathVariable String commonName) {
-        var userResponse = userService.findUserByCn(commonName);
-        return ResponseEntity.ok(userResponse);
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/{cn}")
+    public ResponseEntity<UserResponseDto> getUserByCn(@PathVariable String cn) {
+        UserResponseDto user = userService.findUserByCn(cn);
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody UserCreateDto dto, UriComponentsBuilder uriBuilder) {
-        String newUserCommonName = userService.createUser(dto);
-        URI location = uriBuilder.path("/users/{id}").buildAndExpand(newUserCommonName).toUri();
-        return ResponseEntity.created(location).build();
+    public ResponseEntity<String> createUser(@Valid @RequestBody UserCreateDto userDto) {
+        userService.createNewUser(userDto);
+        URI location = URI.create("/api/v1/users/" + userDto.firstName()); // todo: return common name
+        return ResponseEntity.created(location).body("User created successfully.");
     }
 
-    @PutMapping("/{commonName}/reset-password")
-    public ResponseEntity<?> resetPassword(@PathVariable String commonName) {
-        userService.resetPassword(commonName);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{cn}/reset-password")
+    public ResponseEntity<String> resetPassword(@PathVariable String cn) {
+        userService.resetPassword(cn);
+        return ResponseEntity.ok("Password reset successfully.");
     }
 
-    @PutMapping("/{commonName}/lock")
-    public ResponseEntity<?> lockUserAccount(@PathVariable String commonName) {
-        userService.lockUser(commonName);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{cn}/lock")
+    public ResponseEntity<String> lockUser(@PathVariable String cn) {
+        userService.lockUser(cn);
+        return ResponseEntity.ok("User locked successfully.");
     }
 
-    @PutMapping("/{commonName}/unlock")
-    public ResponseEntity<?> unlockUserAccount(@PathVariable String commonName) {
-        userService.unlockUser(commonName);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{cn}/unlock")
+    public ResponseEntity<String> unlockUser(@PathVariable String cn) {
+        userService.unlockUser(cn);
+        return ResponseEntity.ok("User unlocked successfully.");
     }
-
 }

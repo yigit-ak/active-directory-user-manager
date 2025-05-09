@@ -1,69 +1,78 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import GoBack from "../../components/GoBack";
+import GoBack from "@/components/GoBack";
 import {
-  fetchUser,
-  enableUserAccount,
-  disableUserAccount,
-  resetUserPassword
-} from "../../api.js"
+  getUserByCn,
+  lockUser,
+  unlockUser,
+  resetPassword,
+} from "@/api.js";
 
 function UserDetails() {
-  const { commonName } = useParams();
-  const [client, setClient] = useState(null);
+  const { cn } = useParams();
+  const [user, setUser] = useState(null);
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    const getUserData = async () => {
+    const fetchUser = async () => {
       try {
-        const user = await fetchUser(commonName);
-        setClient(user);
+        const data = await getUserByCn(cn);
+        setUser(data);
       } catch (error) {
-        console.error("Failed to fetch user:", error);
+        console.error(error);
+        setMessage(error.message || "Failed to load user data.");
       } finally {
         setLoading(false);
       }
     };
 
-    getUserData();
-  }, [commonName]);
+    fetchUser();
+  }, [cn]);
 
   const handleToggleLock = async () => {
-    if (!client) return;
+    if (!user) return;
+    setActionLoading(true);
+    setMessage("");
 
     try {
-      if (client.isEnabled) {
-        await disableUserAccount(client.commonName);
+      if (user.isEnabled) {
+        await lockUser(user.commonName);
+        setUser({ ...user, isEnabled: false });
+        setMessage("User locked.");
       } else {
-        await enableUserAccount(client.commonName);
+        await unlockUser(user.commonName);
+        setUser({ ...user, isEnabled: true });
+        setMessage("User unlocked.");
       }
-
-      // Refetch user data to update UI
-      const updatedUser = await fetchUser(commonName);
-      setClient(updatedUser);
     } catch (error) {
-      console.error("Failed to toggle user lock:", error);
+      console.error(error);
+      setMessage(error.message || "Failed to toggle lock.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleResetPassword = async () => {
-    if (!client) return;
+    if (!user) return;
+    setActionLoading(true);
+    setMessage("");
 
     try {
-      await resetUserPassword(client.commonName);
-      alert("User password has been reset.");
+      await resetPassword(user.commonName);
+      setMessage("Password has been reset and sent to the user's email.");
     } catch (error) {
-      console.error("Failed to reset password:", error);
+      console.error(error);
+      setMessage(error.message || "Failed to reset password.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  if (loading) {
-    return <div>Loading user details...</div>;
-  }
+  if (loading) return <div>Loading user details...</div>;
 
-  if (!client) {
-    return <div>User not found.</div>;
-  }
+  if (!user) return <div>{message || "User not found."}</div>;
 
   return (
     <div className="user-details-page">
@@ -71,41 +80,33 @@ function UserDetails() {
         <GoBack link={'/user-lookup'} />
 
         <div className="info-card-layout-top">
-          <h1 className="info-card-title">{client.commonName}</h1>
-          {client.isEnabled && <div className="user-locked-warning">User is locked.</div>}
+          <h1 className="info-card-title">{user.commonName}</h1>
+          {!user.isEnabled && <div className="user-locked-warning">User is locked.</div>}
         </div>
 
         <div className="info-card-layout-bottom">
           <div className="info-card-body">
-            <div className="user-info">
-              <span className="info-card-attribute">Name: </span> {client.firstName}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Surname: </span> {client.lastName}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Vendor: </span> {client.vendor}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Email: </span> {client.email}
-            </div>
-            <div className="user-info">
-              <span className="info-card-attribute">Phone: </span> {client.phoneNumber}
-            </div>
-          </div>
-        
-          <div className="user-info-card-buttons">
-            <button onClick={handleToggleLock}>
-              {!client.isEnabled ? "Lock User" : "Unlock User"}
-            </button>
-            <button onClick={handleResetPassword}>Reset Password</button>
+            <div className="user-info"><span className="info-card-attribute">Name: </span>{user.firstName}</div>
+            <div className="user-info"><span className="info-card-attribute">Surname: </span>{user.lastName}</div>
+            <div className="user-info"><span className="info-card-attribute">Group: </span>{user.vendor}</div>
+            <div className="user-info"><span className="info-card-attribute">Email: </span>{user.email}</div>
+            <div className="user-info"><span className="info-card-attribute">Phone: </span>{user.phoneNumber}</div>
           </div>
 
+          <div className="user-info-card-buttons">
+            <button onClick={handleToggleLock} disabled={actionLoading}>
+              {user.isEnabled ? "Lock User" : "Unlock User"}
+            </button>
+            <button onClick={handleResetPassword} disabled={actionLoading}>
+              Reset Password
+            </button>
+          </div>
+
+          {message && <div className="info-message">{message}</div>}
         </div>
       </div>
     </div>
-  )
+  );
 }
-    
-  export default UserDetails;
-  
+
+export default UserDetails;

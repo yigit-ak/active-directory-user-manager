@@ -1,57 +1,40 @@
-const API_BASE_URL = "http://localhost:8080"; // TODO: Change to .env
-
 import axios from "axios";
 
-export const fetchAllVendors = async () => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/api/v1/vendors`);
-        return response.data.map(vendor => VendorResponseDto.fromJson(vendor));
-    } catch (error) {
-        console.error("Error fetching:", error);
-    }
+const API_BASE = "http://localhost:8080/api/v1";
+
+const axiosInstance = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
+
+const handleRequest = async (requestFunction) => {
+  try {
+    const response = await requestFunction();
+    return response.data;
+  } catch (error) {
+    console.error("API call failed:", error);
+    const message = error.response?.data || "Unexpected error occurred.";
+    throw new Error(message);
+  }
 };
 
-export const fetchUser = async (commonName) => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/api/v1/users/${commonName}`);
-        return UserResponseDto.fromJson(response.data);
-    } catch (error) {
-        console.error("Error fetching:", error);
-    }
-};
+export const getAllVendors = () =>
+  handleRequest(() => axiosInstance.get("/vendors"));
 
-export const createUser = async (userCreateDto) => {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/api/v1/users`, userCreateDto.toJson());
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching:", error);
-    }
-}
+export const getUserByCn = (cn) =>
+  handleRequest(() => axiosInstance.get(`/users/${cn}`));
 
-export const resetUserPassword = async (userCommonName) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/api/v1/users/${userCommonName}`);
-        return response.status;
-    } catch (error) {
-        console.error("Error fetching:", error);
-    }
-}
+export const createUser = (userData) =>
+  handleRequest(() => axiosInstance.post(`/users`, userData));
 
-export const enableUserAccount = async (userCommonName) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/api/v1/users/${userCommonName}`);
-        return response.status;
-    } catch (error) {
-        console.error("Error fetching:", error);
-    }
-}
+export const resetPassword = (cn) =>
+  handleRequest(() => axiosInstance.put(`/users/${cn}/reset-password`));
 
-export const disableUserAccount = async (userCommonName) => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/api/v1/users/${commonName}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching:", error);
-    }
-}
+export const lockUser = (cn) =>
+  handleRequest(() => axiosInstance.put(`/users/${cn}/lock`));
+
+export const unlockUser = (cn) =>
+  handleRequest(() => axiosInstance.put(`/users/${cn}/unlock`));
+
+export const checkAuth = () =>
+  handleRequest(() => axiosInstance.get("/auth"));

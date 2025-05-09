@@ -1,0 +1,280 @@
+openapi: 3.0.3
+info:
+  title: Active Directory User Manager API
+  description: API for managing Active Directory users and vendors, including account creation, locking, unlocking, and password resets.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+security:
+  - oauth2: []
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://your-auth-server/oauth/authorize
+          tokenUrl: https://your-auth-server/oauth/token
+          scopes: {}
+  schemas:
+    VendorDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Sales"
+
+    UserResponseDto:
+      type: object
+      properties:
+        vendor:
+          type: string
+          example: "Sales"
+        cn:
+          type: string
+          example: "john.doe"
+        sAMAccountName:
+          type: string
+          example: "jdoe"
+        displayName:
+          type: string
+          example: "John Doe"
+        givenName:
+          type: string
+          example: "John"
+        sn:
+          type: string
+          example: "Doe"
+        mail:
+          type: string
+          example: "john.doe@example.com"
+        telephoneNumber:
+          type: string
+          example: "+1-234-567-890"
+        accountEnabled:
+          type: boolean
+          example: true
+
+    UserCreateDto:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - phoneNumber
+        - vendor
+      properties:
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          example: "john.doe@example.com"
+        phoneNumber:
+          type: string
+          example: "+1-234-567-890"
+        vendor:
+          type: string
+          example: "Sales"
+
+paths:
+  /vendors:
+    get:
+      summary: Get all vendors
+      tags:
+        - Vendors
+      description: Returns a list of vendor organizational units from Active Directory.
+      responses:
+        '200':
+          description: A list of vendors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VendorDto'
+        '500':
+          description: Failed to fetch vendors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /users/{cn}:
+    get:
+      summary: Get user by Common Name (CN)
+      tags:
+        - Users
+      description: Returns user information for a given CN (common name).
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          description: The Common Name of the user to fetch.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /users:
+    post:
+      summary: Create a new user
+      tags:
+        - Users
+      description: Creates a new user account in Active Directory, sends an email with login credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateDto'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User created successfully."
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: string
+  /users/{cn}/reset-password:
+    put:
+      summary: Reset a user's password
+      tags:
+        - Users
+      description: Resets the password of the specified user and sends an email with the new password.
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          description: The Common Name of the user to reset password for.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Password reset successfully."
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /users/{cn}/lock:
+    put:
+      summary: Lock a user account
+      tags:
+        - Users
+      description: Locks (disables) the specified user account.
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          description: The Common Name of the user to lock.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User locked successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User locked successfully."
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /users/{cn}/unlock:
+    put:
+      summary: Unlock a user account
+      tags:
+        - Users
+      description: Unlocks (enables) the specified previously locked user account.
+      parameters:
+        - name: cn
+          in: path
+          required: true
+          description: The Common Name of the user to unlock.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User unlocked successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "User unlocked successfully."
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: string

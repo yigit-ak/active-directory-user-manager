@@ -1,10 +1,8 @@
 package net.yigitak.ad_user_manager.util;
 
+import net.yigitak.ad_user_manager.enums.UserAccountControlFlag;
+
 public class UserAccountControlUtil {
-    // userAccountControl flags
-    private static final int NORMAL_ACCOUNT = 0x200; // 512
-    private static final int DONT_EXPIRE_PASSWD = 0x10000; // 65536
-    private static final int ACCOUNTDISABLE = 0x2; // 2
 
     /**
      * Enable user and set non-expiring password
@@ -12,7 +10,7 @@ public class UserAccountControlUtil {
      * @return userAccountControl value
      */
     public static int getEnabledAccountWithExpiringPassword() {
-        return NORMAL_ACCOUNT | DONT_EXPIRE_PASSWD;
+        return UserAccountControlFlag.NORMAL_ACCOUNT.getValue() | UserAccountControlFlag.DONT_EXPIRE_PASSWD.getValue();
     }
 
     /**
@@ -21,16 +19,17 @@ public class UserAccountControlUtil {
      * @return userAccountControl value
      */
     public static int getEnabledAccount() {
-        return NORMAL_ACCOUNT;
+        return UserAccountControlFlag.NORMAL_ACCOUNT.getValue();
     }
 
     /**
      * Disable an existing user while keeping other flags intact
+     *
      * @param userAccountControl The current userAccountControl value
      * @return New userAccountControl value with ACCOUNTDISABLE flag set
      */
     public static int disableAccount(int userAccountControl) {
-        return userAccountControl | ACCOUNTDISABLE;
+        return userAccountControl | UserAccountControlFlag.ACCOUNTDISABLE.getValue();
     }
 
     public static int disableAccount(String userAccountControl) {
@@ -39,11 +38,12 @@ public class UserAccountControlUtil {
 
     /**
      * Enable a previously disabled user while keeping other flags intact
+     *
      * @param userAccountControl The current userAccountControl value
      * @return New userAccountControl value with ACCOUNTDISABLE flag removed
      */
     public static int enableUser(int userAccountControl) {
-        return userAccountControl & ~ACCOUNTDISABLE; // Removes the disabled flag
+        return userAccountControl & ~UserAccountControlFlag.ACCOUNTDISABLE.getValue();
     }
 
     public static int enableUser(String userAccountControl) {
@@ -57,11 +57,10 @@ public class UserAccountControlUtil {
      * @return true if enabled, false otherwise
      */
     public static boolean isAccountEnabled(int userAccountControl) {
-        return (userAccountControl & ACCOUNTDISABLE) == 0;
+        return (userAccountControl & UserAccountControlFlag.ACCOUNTDISABLE.getValue()) == 0;
     }
 
     public static boolean isAccountEnabled(String userAccountControl) {
         return isAccountEnabled(Integer.parseInt(userAccountControl));
     }
-
 }
