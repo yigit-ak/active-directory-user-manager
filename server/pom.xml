@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>net.yigitak</groupId>
 	<artifactId>ad-user-manager</artifactId>
-	<version>3.4.5</version>
+	<version>1.0.0</version>
 	<name>ad-user-manager</name>
 	<description>Active Directory User Manager</description>
 	<url>https://github.com/yigit-ak/ad-user-manager</url>
